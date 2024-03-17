@@ -1,0 +1,480 @@
+/* Size for brand */
+nav .navbar-brand
+{
+    font-size: xx-large;
+}
+
+/* Colors for brand */
+nav .navbar-brand .blue
+{
+    color: #537fbe;
+}
+nav .navbar-brand .red
+{
+    color: #ea433b;
+}
+nav .navbar-brand .yellow
+{
+    color: #f5b82e;
+}
+nav .navbar-brand .green
+{
+    color: #2e944b;
+}
+
+.add_setColor{
+
+    background-color:blue;
+    border-color:black;
+    color:"white";
+}
+
+.delete_exerciseColor{
+
+    background-color:red;
+    border-color:black;
+    color:"white";
+}
+
+.delete_setColor{
+
+    background-color:#f35454;
+    border-color:black;
+    color:"white";
+}
+/* Make sure that padding behaves as expected */
+* {box-sizing:border-box}
+
+/* Container for skill bars */
+/*Beware of the bootsrap container */
+.containerMacro {
+  width: 100%; /* Full width */
+  background-color: #ddd; /* Grey background */
+}
+
+.skills {
+  text-align: right; /* Right-align text */
+  padding-top: 10px; /* Add top padding */
+  padding-bottom: 10px; /* Add bottom padding */
+  color: white; /* White text color */
+}
+
+.protein {width: 0%; background-color: #04AA6D;max-width: 100%;} /* Green */
+.carbohydrates {width: 0%; background-color: #2196F3;max-width: 100%;} /* Blue */
+.fats {width: 0%; background-color: #800080;max-width: 100%;} /* Purple */
+.calories {width: 0%; background-color: #FFEA00;max-width: 100%;} /* Yellow */
+
+
+.caloriesInfo{
+    font-family: Georgia, serif;
+}
+.goalInfo{
+    font-family: 'Brush Script MT',cursive;
+}
+
+
+
+/* past meals button */
+.past_meals {
+  background-color: #e1ecf4;
+  border-radius: 3px;
+  border: 1px solid #7aa7c7;
+  box-shadow: rgba(255, 255, 255, .7) 0 1px 0 0 inset;
+  box-sizing: border-box;
+  color: #39739d;
+  cursor: pointer;
+  display: inline-block;
+  font-family: -apple-system,system-ui,"Segoe UI","Liberation Sans",sans-serif;
+  font-size: 13px;
+  font-weight: 400;
+  line-height: 1.15385;
+  margin: 0;
+  outline: none;
+  padding: 8px .8em;
+  position: relative;
+  text-align: center;
+  text-decoration: none;
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: manipulation;
+  vertical-align: baseline;
+  white-space: nowrap;
+}
+
+.past_meals:focus {
+  background-color: #b3d3ea;
+  color: #2c5777;
+}
+
+.past_meals:focus {
+  box-shadow: 0 0 0 4px rgba(0, 149, 255, .15);
+}
+
+.past_meals:active {
+  background-color: #a0c7e4;
+  box-shadow: none;
+  color: #2c5777;
+}
+
+/* CSS */
+.removeMeal {
+  background: linear-gradient(to bottom right, #EF4765, #FF9A5A);
+  border: 0;
+  border-radius: 12px;
+  color: #FFFFFF;
+  cursor: pointer;
+  display: inline-block;
+  font-family: -apple-system,system-ui,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 2.0;
+  outline: transparent;
+  padding: 0 1rem;
+  text-align: center;
+  text-decoration: none;
+  transition: box-shadow .2s ease-in-out;
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: manipulation;
+  white-space: nowrap;
+}
+
+.removeMeal:not([disabled]):focus {
+  box-shadow: 0 0 .25rem rgba(0, 0, 0, 0.5), -.125rem -.125rem 1rem rgba(239, 71, 101, 0.5), .125rem .125rem 1rem rgba(255, 154, 90, 0.5);
+}
+
+.removeMeal:not([disabled]):hover {
+  box-shadow: 0 0 .25rem rgba(0, 0, 0, 0.5), -.125rem -.125rem 1rem rgba(239, 71, 101, 0.5), .125rem .125rem 1rem rgba(255, 154, 90, 0.5);
+}
+
+.removeFood {
+  background: linear-gradient(to bottom right, #FF2400, #B80F0A);
+  border: 0;
+  border-radius: 12px;
+  color: #FFFFFF;
+  cursor: pointer;
+  display: inline-block;
+  font-family: -apple-system,system-ui,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 2.0;
+  outline: transparent;
+  padding: 0 1rem;
+  text-align: center;
+  text-decoration: none;
+  transition: box-shadow .2s ease-in-out;
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: manipulation;
+  white-space: nowrap;
+}
+
+.removeFood:not([disabled]):focus {
+  box-shadow: 0 0 .25rem rgba(0, 0, 0, 0.5), -.125rem -.125rem 1rem rgba(239, 71, 101, 0.5), .125rem .125rem 1rem rgba(255, 154, 90, 0.5);
+}
+
+.removeFood:not([disabled]):hover {
+  box-shadow: 0 0 .25rem rgba(0, 0, 0, 0.5), -.125rem -.125rem 1rem rgba(239, 71, 101, 0.5), .125rem .125rem 1rem rgba(255, 154, 90, 0.5);
+}
+
+.addPastMeal{
+  background-color:#20B2AA;
+  color:#F0EAD6;
+  font-family: -apple-system,system-ui,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 2.0;
+  outline: transparent;
+}
+.backToMeal{
+  background-color:#FFD700;
+  color:#F0EAD6;
+  font-family: -apple-system,system-ui,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 2.0;
+  touch-action: manipulation;
+  text-align: center;
+}
+.searchFood{
+  background-color:#0096FF;
+  color:#F0EAD6;
+  font-family: -apple-system,system-ui,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  text-align: center;
+}
+.createFood{
+  background-color:#CF9FFF;
+  color:#F0EAD6;
+  font-family: -apple-system,system-ui,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  text-align: center;
+}
+.btndiv{
+    background-color: transparent;
+    border: none;
+    color:black;
+}
+.succesMe{
+  background-color:#00FF7F;
+  color:"black";
+}
+.addWeight{
+  background-color:#FFE5B4;
+  color:#5F8575;
+  font-family: -apple-system,system-ui,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  text-align: center;
+}
+.Good{
+  background-color:#50C878;
+}
+.Bad{
+  background-color:#FAA0A0;
+}
+.divFade{
+  color:#5F8575;
+  -webkit-animation:fadeOut 1.5s 2s forwards;
+}
+@-webkit-keyframes fadeOut{
+  0%{opacity:1;}
+  100%{opacity:0;}
+}
+
+.addWorkout{
+  color:#FCF5E5;
+  background-color:#6495ED;
+  touch-action: manipulation;
+  white-space: nowrap;
+  text-align:center;
+  height:32.1px;
+}
+.centerImg{
+  margin-left: auto;
+  margin-right: auto;
+}
+.imgButtons{
+height:60px;
+width:55px;
+}
+.popup {
+  position: fixed;
+  z-index: 1;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  overflow: auto;
+  background-color: rgba(0, 0, 0, 0.4);
+  display: none;
+}
+.popup-content {
+  background-color: white;
+  margin: 15% auto;
+  padding: 20px;
+  border: 1px solid #888888;
+  width: 50%;
+  font-weight: bolder;
+}
+.popup-content button {
+  display: block;
+  margin: 0 auto;
+}
+.show {
+  display: block;
+}
+h1 {
+  text-align:center;
+  color:white;
+}
+
+.instructions{
+  font-family: Georgia;
+  font-weight: 200;
+  line-height:2;
+  padding:5px;
+}
+
+.autoComplete{
+  background-color:#ADD8E6;
+  border:solid;
+  border-width:2px;
+}
+
+.exerciseInfo{
+  color:#00A36C;
+  float:right;
+  text-align:right;
+}
+
+.notFoundEx{
+  color:gray;
+  text-align:center;
+}
+.vertical-center {
+  margin: 0;
+  position: absolute;
+  top: 50%;
+  -ms-transform: translateY(-50%);
+  transform: translateY(-50%);
+}
+.containerCenter {
+  height: 200px;
+  position: relative;
+  border: 3px solid green;
+}
+
+.stats{
+  position:relative;
+  top:70px;
+  left:40px;
+  font-family:'Calibri';
+  border:solid;
+  border-color:#89CFF0;
+  display: inline-block;
+  color:#0047AB;
+}
+
+.h3stats{
+  position:relative;
+  top:70px;
+  font-family:'Calibri';
+  color:#0047AB;
+}
+.welcome{
+  position:relative;
+  top:15px;
+  text-align:center;
+  font-family:'Calibri';
+  color:#0047AB;
+}
+/*Why does this work?*/
+table {
+  border-collapse: collapse;
+  width: 100%;
+}
+
+table tr td {
+ width: 120px;
+ padding: 6px;
+}
+
+.gg-gym {
+    box-sizing: border-box;
+    position: relative;
+    display: block;
+    width: 50px;
+    height: 50px;
+    border-top: 21px solid transparent;
+    border-bottom: 27px solid transparent;
+    box-shadow: inset 0 0 0 2px
+}
+.gg-gym::after,
+.gg-gym::before {
+    content: "";
+    display: block;
+    box-sizing: border-box;
+    position: absolute
+}
+.gg-gym::before {
+    box-shadow:
+        -3px 0 0 -1px,
+        3px 0 0 -1px,
+        inset 2px 0 0 0,
+        inset -2px 0 0 0;
+    width: 14px;
+    height: 8px;
+    border-left: 2px solid transparent;
+    border-right: 1px solid transparent;
+    top: -3px;
+    left: -3px
+}
+.gg-gym::after {
+    width: 22px;
+    height: 2px;
+    border-left: 50px solid;
+    border-right: 5px solid;
+    top: 0;
+    left: -7px
+}
+.index-background {
+  background-image: url('/static/pictures/gym-background.png');
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+  background-size: cover;
+}
+.ex_infoCont{
+  padding:20px;
+  margin-top: 100px;
+  margin-bottom: 100px;
+  margin-right: 150px;
+  margin-left: 80px;
+}
+.titleContainer{
+  border:1px solid black;
+  background-color:#4169E1;
+}
+
+.delTemp_btn{
+  border-radius: 15px;
+}
+.delTemp_btn:hover{
+  background-color:#FF3131;
+}
+
+.pulse:hover,
+.pulse:focus {
+  -webkit-animation: pulse_green 1s;
+  box-shadow: 0 0 0 2em transparent;
+  background-color:#50C878
+}
+@-webkit-keyframes pulse_green {
+  0% { box-shadow: green 0 0 0 0; }
+}
+@-webkit-keyframes pulse_red {
+  0% { box-shadow: red 0 0 0 0; }
+}
+.pulse{
+  color:black;
+  transition:0.25s;
+}
+
+.deleteWorkout:hover,
+.deleteWorkout:focus {
+  box-shadow: inset 8.5em 0 0 0 red;
+  transition:0.2s;
+}
+
+.deleteWorkout{
+  display:inline;
+  border-radius:8px;
+  height:29.2px;
+  line-height:0px;
+}
+
+.endWorkout{
+background-color:yellow;
+color:black;
+height:29.2px;
+line-height:0px;
+border-radius:8px;
+}
+.yes:hover{
+  -webkit-animation: pulse_green 1s;
+  box-shadow: 0 0 0 2em transparent;
+  background-color:#50C878;
+  transition:0.5s
+}
+.no:hover{
+  -webkit-animation: pulse_red 1s;
+  box-shadow: 0 0 0 2em transparent;
+  background-color:red;
+  transition:0.5s;
+}
+.no{
+  float:right;
+}
+
