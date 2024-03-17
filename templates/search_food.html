@@ -1,0 +1,111 @@
+{% extends "edit_meal.html" %}
+
+{% block title %}
+    Search food
+{% endblock %}
+
+{% block search %}
+<!--Create add food btns-->
+<div id="dishesDiv">
+  <h5 class="goalInfo" id="dishes">Dishes</h5>
+
+  <!--Display dishes-->
+  <ul id="foods_searched_list">
+  {% for food in food_names %}
+    <li id="{{food}}_found"><a class="nav-link goalInfo" onclick="macroInfo('{{food | safe}}')">{{food}}</a> <button class="btn btn-primary" type="submit" onclick="addFood('{{food | safe}}')">Add to meal +</button></li>
+  {% endfor %}
+  </ul>
+    <h6 class="goalInfo" id="h6_grams">If you want to add food insert the number of grams</h6>
+    <input type="number" placeholder="grams" id="grams" min="0" max="100000" step="0.01">g
+</div>
+<!--Verifying if the food searched was actually found-->
+{% if found_same == 'n' %}
+<div>
+  <h5 class="goalInfo" style="color:#0096FF">If the food you were looking for is not in the list above you can create it</h5>
+  <form action="/search_food" method="get">
+    <button id="search_food" class="createFood">Create food</button>
+  </form>
+</div>
+{% endif %}
+<script>
+   let foods_searched = {{food_names | safe}};
+   //If the user reloads the page we send him to /add_food beacuse the reload interfers with the removes
+   function addFood(food_name){
+        if (!document.getElementById("grams").value || document.getElementById("grams").value == 0){
+          alert("Insert number of grams");
+          return;
+        }
+
+        for (let i = 0, l = foods.length; i < l; i++)
+             if (foods[i] == food_name){
+              alert("Food already in meal");
+              return;
+             }
+
+        $.ajax({
+            url: '/add_food',
+            type: 'PUT',
+            contentType: 'application/json',
+            data: JSON.stringify( {"food_name": food_name, "grams":document.getElementById("grams").value})
+        });
+
+        //Adding the h5 and ul if there is no food in the list because that means one is getting added
+        if (foods.length == 0){
+          let meal_prezent = document.createElement("h5");
+          let meal_text = document.createTextNode("Foods in this meal:");
+          meal_prezent.id = "meal_prez";
+
+          meal_prezent.appendChild(meal_text);
+
+          document.body.appendChild(meal_prezent);
+
+          let ul = document.createElement("ul");
+          ul.id = "meal_list";
+          document.body.appendChild(ul);
+        }
+        //Adding the elements of the ul
+        let li = document.createElement("li");
+        li.id = food_name;
+        //Adding the elements of the li(the a and button)
+        let a = document.createElement("a");
+        a.classList.add("nav-link");
+        a.classList.add("goalInfo");
+
+        a.onclick = function(){
+        macroInfo(food_name);
+        }
+
+        a_text = document.createTextNode(food_name);
+        a.appendChild(a_text);
+
+        let remove_btn = document.createElement("button");
+        let remove_text = document.createTextNode("Remove food");
+
+        remove_btn.appendChild(remove_text);
+
+        remove_btn.type = "submit";
+        remove_btn.classList.add("removeFood");
+
+        remove_btn.onclick = function(){
+        removeFood(food_name);
+        }
+        li.appendChild(a);
+        li.appendChild(remove_btn);
+
+        document.getElementById("meal_list").appendChild(li);
+
+        //Adding the new food name to the list
+        foods.push(food_name);
+
+        document.getElementById(food_name + "_found").remove();
+
+        //Removes the food that was added to the meal from the list of foods that was searched
+        foods_searched.splice(foods_searched.indexOf(food_name), 1);
+
+        //If there is no more food_searched we remove the h5 and the ul
+        if (foods_searched.length == 0){
+          document.getElementById("dishesDiv").remove();
+      }
+    }
+</script>
+{% endblock %}

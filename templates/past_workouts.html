@@ -1,0 +1,67 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    Workouts
+{% endblock %}
+
+{% block main %}
+<div class="titleContainer">
+    <h1>{{workout_name}}</h1>
+  </div>
+    <main class="container-fluid py-5 text-center">
+    <h4>duration:{{workout_duration}}     |date:{{workout_date}}</h4>
+    <!--Display pop up-->
+    <div class="popup">
+        <div class="popup-content">
+            <h3 style="text-align:center;">You still have an ongoing workout</h3>
+            <p></p>
+            <button class="removeMeal" style="display:inline;" onclick="createWorkout()">Start workout</button>
+            <a style="color: gray; display: inline; float:center;" href="/new_workout">Continue active workout</a>
+        </div>
+    </div>
+    {% if active_workout %}
+        <div><button class="addWorkout" onclick="popUp()">Perform again<img src="static/pictures/startW.png" style="height:32.2px;" class="centerImg"></button></div>
+    {% else %}
+        <div><button class="addWorkout" onclick="createWorkout()">Perform again<img src="static/pictures/startW.png" style="height:32.2px;" class="centerImg"></button></div>
+    {% endif %}
+
+    {% for name in ex_names %}
+    <table class="table table-success table-striped" id="{{name}}">
+        <thead>
+        <tr class="table-info">
+            <th scope="col" class="table-info">{{name}}</th>
+            <th scope="col" class="table-info">Weight</th>
+            <th scope="col" class="table-info">Reps</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for i in sets_list[name] %}
+        <tr class="table-info">
+            <td class="table-info">set {{i + 1}}</td>
+            <td class="table-info">{{weight[name][i]}}kg</td>
+            <td class="table-info">{{reps[name][i]}}</td>
+        </tr>
+        {% endfor %}
+    {% endfor %}
+    <script>
+        function createWorkout(){
+            let workout_exercises = [];
+            let workout_name = "{{workout_name | safe}}";
+
+            let ex_names = {{ex_names | safe}};
+            let nr_sets = {{nr_sets | safe}};
+
+            $.ajax({
+                url: "/workouts",
+                type: "PUT",
+                contentType: "application/json",
+                data: JSON.stringify({"workout_name": workout_name, "workout_exercises": ex_names, 'nr_sets': nr_sets})
+            }).then(()=>{window.location.href = "/new_workout";});
+        }
+
+        function popUp(){
+            let popup = document.getElementsByClassName("popup");
+            popup[0].classList.add("show");
+        }
+    </script>
+{% endblock %}

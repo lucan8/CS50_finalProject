@@ -1,0 +1,12 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    Apology
+{% endblock %}
+
+{% block main %}
+    <!-- https://memegen.link/ -->
+    <main class="container-fluid py-5 text-center">
+    <img alt="{{ top }}" class="border img-fluid" src=" https://api.memegen.link/images/custom/{{ top | urlencode }}/{{ bottom | urlencode }}.jpg?background=https%3A%2F%2Fwww.cybersalt.org%2Fimages%2Fstories%2Fcleanlaugh%2Fdogs%2Fdogsprinkler.jpg&watermark=memecomplete.com&token=a394zs2rllvqnc6pp7b5 " title="{{ top }}">
+    </main>
+{% endblock %}

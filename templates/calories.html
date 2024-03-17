@@ -1,0 +1,289 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    Calories
+{% endblock %}
+
+{% block main %}
+<div class="titleContainer">
+  <h1>Calories</h1>
+</div>
+   <!--This is a form for the calorie calculator-->
+    {% if get_started %}
+    <main class="container-fluid py-5 text-center">
+      <h3>Complete the information below and press 'Calculate' to see how many calories you burn every day</h3>
+        <form action="/calories" method="post">
+            <h4>Choose your sex</h4>
+              <select name="gender" id="gender">
+                <option disabled selected value="0">Select Gender</option>
+                <option value="1">Male</option>
+                <option value="2">Female</option>
+              </select>
+            <h4>Choose your height</h4>
+              <div><input type="number" step="0.01" placeholder="0" name="height" id="height" min="0">cm</div>
+
+            <h4>Choose your weight</h4>
+              <div><input type="number" step="0.01" placeholder="0" name="weight" id="weight" min="0">kg</div>
+
+            <h4>Choose your age</h4>
+              <div><input type="number" step="0.01" placeholder="0" name="age" id="age" min="0">years</div>
+
+            <h4>Choose degree of activity</h4>
+              <select name="activity" id="activity">
+                <option disabled selected value="0">Select Activity Level</option>
+                <option value="1">Sedentary(close to no activity)</option>
+                <option value="2">Lightly Active</option>
+                <option value="3">Moderatily Active(exercising like 1-3 times a week)</option>
+                <option value="4">Active(exercising like 3-5 times a week)</option>
+                <option value="5">Very Active(exercising everyday)</option>
+              </select>
+            <h4>Choose a goal</h4>
+              <select name="goal" id="goal">
+                <option disabled selected value="0">Select goal</option>
+                <option value="1">Lose weight(cut)</option>
+                <option value="2">Maintain weight</option>
+                <option value="3">Gain weight(bulk)</option>
+              </select>
+            <button type="submit" disabled id="calculate" class="btn btn-primary">Calculate</button>
+        </form>
+    </main>
+
+    {% else %}
+    <main class="container-fluid py-5 text-center">
+      <h6 class="caloriesInfo">The calorie goal is calculated by adding(bulk) or subtracting(cut) 300 calories from the calories burned or leaving it unchanged if the goal is maintenance</h6>
+
+      <h3>Calories expanded in a day(on average): {{calories_burnedAVG}}</h3>
+
+      <h5>Calories progress</h5>
+      <div class="containerMacro">
+        <div class="skills calories" name="calories" value="{{calories_burned}}" id="calories_prog">{{calories_burned}}</div>
+      </div>
+      <p id="calorie_goal" class="goalInfo" >{{calories_goal}}kcal</p>
+
+      <!--Setting up the macros bars-->
+      <!--Use the 'p' elements to write the amount of macros consumed-->
+      <!--Create another to tell user how much they need to consume-->
+      <h5>Protein</h5>
+      <div class="containerMacro">
+        <div class="skills protein" name="protein" value="{{protein_nr}}" id="prot_prog">{{protein_nr}}</div>
+      </div>
+      <p id="prot_goal" class="goalInfo">{{protein_goal}}g</p>
+
+      <h5>Carbohydrates</h5>
+      <div class="containerMacro">
+        <div class="skills carbohydrates" name="carbs" value="{{carbs_nr}}" id="carbs_prog">{{carbs_nr}}</div>
+      </div>
+      <p id="carbs_goal" class="goalInfo">{{carbs_goal}}g</p>
+
+      <h5>Fats</h5>
+      <div class="containerMacro">
+        <div class="skills fats" name="fats" value="{{fats_nr}}" id="fats_prog">{{fats_nr}}</div>
+      </div>
+      <p id="fats_goal" class="goalInfo">{{fats_goal}}g</p>
+
+      <h3 id="cal_rem"></h3>
+      <!--Add weight section-->
+      <div id="div_weight">
+        {% if not weight %}
+            <h5>You can add your weight daily!</h5>
+            <h5>That helps with keeping track of your progress</h5>
+            <h5>You can also see your progress using a chart</h5>
+            <button type="submit" class="addWeight" onclick="addWeight()">Add weight +</button>
+            <input type="number" placeholder="weight in kg" id="weight_today">
+            <div id="divMessage"></div>
+        {% else %}
+            <h6 class="Good">Weight for today inserted</h6>
+        {% endif %}
+      </div>
+
+      <h5 class="goalInfo" style="color:#6a5acd">Meals</h5>
+
+      <form method="post" action="/add_meal">
+        <input type="text" placeholder="Add meal name" name="meal_name" id="meal_name">
+        <button class="btn btn-primary" type="submit" disabled id="mealBtn">Add meal +</button>
+      </form>
+
+      <form method="get" action="/journal">
+        <button class="past_meals" type="submit">See journal</button>
+      </form>
+    </main>
+    {% if meals_index %}
+      <h4 class="goalInfo" style="color:#6a5acd">Today's meals:</h4>
+      <!--Meal_index is used because I need names(which are the indexes of the meals) for the input fields with the names of the meals-->
+      {% for i in meals_index %}
+        <h5 class="caloriesInfo"> {{meals_today[i]}} <button type="submit" class="removeMeal" onclick="removeMeal('{{meals_today[i]}}')">Remove meal</button></h5>
+
+        <ul>
+          {% for food in foods_today[meals_today[i]] %}
+            <li><a class="nav-link goalInfo" onclick="macroInfo('{{meals_today[i] | safe}}','{{food | safe}}')">{{food}}</a></li>
+            {% endfor %}
+        </ul>
+        <!--button seen by the user that clicks the 'input' button-->
+        <button class="btn btn-primary" type="submit" onclick="addClick('{{meals_today[i]}}')">Add food +</button>
+        <p></p>
+      {% endfor %}
+      <!--This sends the name of the meal to the add food url-->
+      <form action="/add_food" method="post">
+        <input name="meal_name" id="active_meal" type="submit" hidden>
+      </form>
+    {% endif %}
+  {% endif %}
+
+  <form action="/food_info" method="post" hidden>
+    <button type="submit" id="sendBtn"></button>
+    <input type="text" name="food_name" id="food_name">
+    <input type="text" name="meal_name" id="meal_info">
+  </form>
+
+       <script>
+        let get_started = "{{get_started | safe}}";
+        if (get_started == "True"){
+
+          //This executes the function verif every second
+          let gender_selector = document.getElementById("gender");
+
+          let activity_selector = document.getElementById("activity");
+
+          let goal_selector = document.getElementById("goal");
+
+          let intId = setInterval(verify, 500);
+          //This function verifies if the user has completed all the input necessary for the calculation
+          //If that is the case the button gets enabled and the calorie goal can be calculated
+          //If at any point one of the requirements is absent the button get disabled again
+          function verify(){
+            let weight = document.getElementById("weight").value;
+
+            let height = document.getElementById("height").value;
+
+            let age = document.getElementById("age").value;
+
+            let selected_activity = activity_selector.options[activity_selector.value].text;
+
+            let selected_gender = gender_selector.options[gender_selector.value].text;
+
+            let selected_goal = goal_selector.options[goal_selector.value].text;
+
+            if (weight && height && age && (selected_gender == "Male" || selected_gender == "Female") && (selected_activity == "Sedentary(close to no activity)" || selected_activity == "Lightly Active" || selected_activity == "Moderatily Active(exercising like 1-3 times a week)" || selected_activity == "Active(exercising like 3-5 times a week)" || selected_activity == "Very Active(exercising everyday)") && (selected_goal == "Lose weight(cut)" || selected_goal == "Maintain weight" || selected_goal == "Gain weight(bulk)"))
+                document.getElementById("calculate").disabled = false;
+            else
+                document.getElementById("calculate").disabled = true;
+            }
+
+          document.getElementById("calculate").addEventListener("click", function(){
+            clearInterval(intId);
+          });
+        }
+        else{
+          //Declaration of all global vars
+          let calories_goal = {{calories_goal | safe}};
+
+          let protein_goal = {{protein_goal | safe}};
+          let carbs_goal = {{carbs_goal | safe}};
+          let fats_goal = {{fats_goal | safe}};
+
+          let calories_burned = {{calories_burned | safe}};
+
+          let protein_consumed = {{protein_nr | safe}};
+          let carbs_consumed = {{carbs_nr | safe}};
+          let fats_consumed = {{fats_nr | safe}};
+
+          function progressMacro(){
+            //Calculating the percentage of progrees made(working with the skill bars)
+            document.getElementById("calories_prog").style.width = ((1.0 * calories_burned /  calories_goal * 100).toFixed(2)).toString() + "%";
+            document.getElementById("prot_prog").style.width = ((1.0 * protein_consumed /  protein_goal * 100).toFixed(2)).toString() + "%";
+            document.getElementById("carbs_prog").style.width = ((1.0 * carbs_consumed / carbs_goal * 100).toFixed(2)).toString() + "%";
+            document.getElementById("fats_prog").style.width = ((1.0 * fats_consumed / fats_goal * 100).toFixed(2)).toString() + "%";
+
+            document.getElementById("cal_rem").innerHTML = "Calories remaining: " + ((calories_goal - calories_burned).toFixed(2)).toString();
+
+          }
+
+          //Meal name input conditions
+          $("#meal_name").on("input",function(event){
+            if (event.target.value)
+               $("#mealBtn").prop('disabled',false);
+            else
+               $("#mealBtn").prop('disabled',true);
+          });
+
+          //Prevents user from inputing symbols and other characters
+          document.getElementById("meal_name").addEventListener("beforeinput", (event) =>{
+            if (event.data && !isAlpha(event.data))
+                event.preventDefault();
+            });
+
+          //This shows the progress made for the protein,carbs and fats skill bars
+          progressMacro();
+
+          //Sends data about the food selected and changes the route that renders food_info.html
+          function macroInfo(meal_name,food_name){
+            $("#food_name").attr("value", food_name);
+            $("#meal_info").attr("value", meal_name);
+            $("#sendBtn").click();
+          }
+
+          function removeMeal(meal_name){
+            $.ajax({
+                  url: '/remove_meal_food',
+                  type: 'POST',
+                  contentType: 'application/json',
+                  data: JSON.stringify({"meal_name": meal_name})
+                }).then(()=>{window.location.href = "https://lucan8-upgraded-invention-rj9g6vvg74x25rq7-5000.app.github.dev/calories";});
+        }
+        //This function clicks another button that sends a form with the chosen meal name
+        function addClick(meal_name){
+          document.getElementById("active_meal").value = meal_name;
+          document.getElementById("active_meal").click();
+        }
+
+        //Handles the weight insertion and the display of the message depending on how the user inputs weight
+        function addWeight(){
+          let weight = document.getElementById("weight_today").value;
+          let div_weight = document.getElementById("div_weight");
+
+          let div = document.getElementById("divMessage");
+          div.classList.add("divFade");
+
+          if (!weight){
+            //Creating the 'bad' message
+            div.classList.add("Bad");
+
+            div.innerHTML = "Add weight first!";
+
+            div_weight.appendChild(div);
+            return;
+          }
+
+          //Sending the weight inserted to /calories(py code) to insert it to the database
+          $.ajax({
+            url: "/calories",
+            type: "PUT",
+            contentType: "application/json",
+            data: JSON.stringify({"weight":weight})
+          });
+          //Emptys div without removing it
+          $(div_weight).empty();
+
+          //Create the 'good' message
+          div.classList.remove("Bad");
+          div.classList.add("Good");
+          div.classList.add("divFade")
+          div.innerHTML = "Weight added!";
+
+          div_weight.appendChild(div);
+          //TO DO:See if this works
+          /*
+          setTimeout(()=>{div.remove();}, 2100);
+          */
+        }
+
+        //Function that verifies if input field contains letter,numbers or &,(),-,/
+        function isAlpha(str){
+          let regex = new RegExp("[a-zA-Z0-9 &()\/\-]");
+          if (str.match(regex))
+             return true;
+          return false;
+        }
+      }
+       </script>
+{% endblock %}

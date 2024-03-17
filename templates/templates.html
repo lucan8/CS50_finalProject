@@ -1,0 +1,163 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    Templates
+{% endblock %}
+
+{% block main %}
+<div class="titleContainer">
+    <h1>Templates</h1>
+</div>
+    <main class="container-fluid py-5 text-center">
+      <div>
+        {% if created == 'no' %}
+          <button class="btn btn-primary" style="background-color:blue;border-color:black;color:white" type="submit" id="start" onclick="popUp()" disabled>Start an empty template +</button>
+        {% else %}
+          <button class="btn btn-primary" style="background-color:blue;border-color:black;color:white" type="submit" id="start" onclick="start()" disabled>Start an empty template +</button>
+        {% endif %}
+          <input type="text" name="template_name" id="template_name" autofocus placeholder="Template name" autocomplete="off">
+      </div>
+
+    <!--<h4>To see your more detail about your templates press a "Search template" button and then the "See template" button</h4>-->
+    <form action="/past_templates" method="post">
+         <input type="submit" id="see_btn" name="template_id" hidden>
+    </form>
+    </main>
+{% if templates %}
+  <table class="table table-success table-hover" id="table_templates">
+      <thead>
+        <tr class="table-succes">
+          <th scope="col" class="table-succes">Name</th>
+          <th scope="col" class="table-succes">Delete</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% if created == 'no' %}
+        <tr class="table-succes" onclick="window.location.href = '/new_template'">
+          <td class="table-succes">{{templates[0]["name"]}}</td>
+          <td class="table-succes"><button type="submit" class="delTemp_btn" disabled>Delete template</button></td>
+        </tr>
+        {% elif created != 0 %}
+        <tr class="table-succes" onclick="search_template({{templates[0]['id']}})">
+          <td class="table-succes">{{templates[0]["name"]}}</td>
+          <td class="table-succes"><button type="submit" class="delTemp_btn" value="{{templates[0]['id']}}" onclick="delete_template(this, this.value)">Delete template</button></td>
+        </tr>
+        {% endif %}
+        {% for i in length %}
+        <tr class="table-succes" onclick="search_template({{templates[i]['id']}})">
+          <td class="table-succes">{{templates[i]["name"]}}</td>
+          <td class="table-succes"><button type="submit" class="delTemp_btn" value="{{templates[i]['id']}}" onclick="delete_template(this, this.value)">Delete template</button></td>
+        </tr>
+        {% endfor %}
+      </tbody>
+  </table>
+{% else %}
+  <h2 style="text-align:center;color:gray">No templates created</h2>
+{% endif %}
+
+<div class="popup">
+  <div class="popup-content">
+      <h3 style="text-align:center;">You still have an ongoing template</h3>
+      <p></p>
+      <button class="removeMeal" style="display:inline;" onclick="start()">Start template</button>
+      <a style="color: gray; display: inline; float:right;" href="/new_template">Continue active template</a>
+  </div>
+</div>
+
+<form action="/templates" method="post">
+  <input type="submit" name="template_name" hidden>
+</form>
+<script>
+      let del_id = 0;
+
+      $("#template_name").on("input", (event) =>{
+        if (event.target.value)
+            $("#start").prop("disabled",false);
+        else
+            $("#start").prop("disabled",true);
+      });
+      function popUp(){
+        let popup = document.getElementsByClassName("popup");
+        popup[0].classList.add("show");
+      }
+
+      function start(){
+        //Verifying if the template name already exists
+        templ_name = $('#template_name').val();
+
+        templates = {{templates | safe}}
+
+        for (template of templates)
+          if (template['name'] == templ_name)
+            {
+              alert("two templates can't have the same name");
+              return;
+            }
+
+        created = "{{created | safe}}";
+        //Discarding current template
+        if (created == 'no')
+        {
+          id = templates[0]['id'];
+
+          $.ajax({
+            url: '/delete_temp',
+            type: 'PUT',
+            contentType: 'application/json',
+            data: JSON.stringify( {"id": id})
+         }).then(()=>{
+          inputs = $('input[type = "submit"]');
+
+          inputs[inputs.length - 1].value = templ_name;
+
+          inputs[inputs.length - 1].click();
+         });
+         return;
+        }
+        else{
+          //Getting all input fields of type submit
+          inputs = $('input[type = "submit"]');
+
+          //Setting the value of the one from the form as the template name
+          inputs[inputs.length - 1].value = $('#template_name').val();
+
+          //Sending the form
+          inputs[inputs.length - 1].click();
+        }
+      }
+        function search_template(id){
+          //When we press the delete button the div also gets pressed
+          //So if the user deletes a template we just return in this function
+          if (id == del_id)
+              return;
+
+          let see_btn = document.getElementById("see_btn");
+
+          see_btn.value = id;
+          see_btn.click();
+          }
+
+        function delete_template(element, id){
+          del_id = id;
+          $.ajax({
+            url: '/delete_temp',
+            type: 'PUT',
+            contentType: 'application/json',
+            data: JSON.stringify( {"id": id})
+        });
+        $(element).parents('tr').remove();
+
+        rows_nr = $('#table_templates tr').length;
+        //If there are no more templates we delete the table and print a message
+        if (rows_nr == 1){
+          $('#table_templates').remove();
+          h2 = document.createElement('h2')
+          h2_txt = document.createTextNode('No templates created');
+          h2.appendChild(h2_txt)
+          document.body.appendChild(h2)
+
+          h2.style.cssText = "text-align:center;color:gray";
+        }
+      }
+    </script>
+{% endblock %}

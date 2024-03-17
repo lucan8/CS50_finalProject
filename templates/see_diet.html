@@ -1,0 +1,108 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    See diet
+{% endblock %}
+
+{% block main %}
+<main class="container-fluid py-5 text-center">
+
+    <h5>Calories progress</h5>
+    <div class="containerMacro">
+      <div class="skills calories" name="calories" value="{{diet_data['calories_burned']}}" id="calories_prog">{{diet_data["calories_burned"]}}</div>
+    </div>
+      <p id="calorie_goal" class="goalInfo" >Goal: {{diet_goals[0]["calories_goal"]}}kcal</p>
+
+      <!--Setting up the macros bars-->
+      <!--Use the 'p' elements to write the amount of macros consumed-->
+      <!--Create another to tell user how much they need to consume-->
+      <!--Try to make it so this resets everyday at set hour-->
+      <h5>Protein</h5>
+      <div class="containerMacro">
+        <div class="skills protein" name="protein" value="{{diet_data['protein_nr']}}" id="prot_prog">{{diet_data["protein_nr"]}}</div>
+      </div>
+      <p id="prot_goal" class="goalInfo">Goal: {{diet_goals[0]["protein_goal"]}}g</p>
+
+      <h5>Carbohydrates</h5>
+      <div class="containerMacro">
+        <div class="skills carbohydrates" name="carbs" value="{{diet_data['carbs_nr']}}" id="carbs_prog">{{diet_data["carbs_nr"]}}</div>
+      </div>
+      <p id="carbs_goal" class="goalInfo">Goal: {{diet_goals[0]["carbs_goal"]}}g</p>
+
+      <h5>Fats</h5>
+      <div class="containerMacro">
+        <div class="skills fats" name="fats" value="{{diet_data['fats_nr']}}" id="fats_prog">{{diet_data["fats_nr"]}}</div>
+      </div>
+
+      <p id="fats_goal" class="goalInfo">Goal: {{diet_goals[0]["fats_goal"]}}g</p>
+      <h3 id="cal_rem"></h3>
+    </main>
+
+      {% if diet_data["meals_today"] != [] %}
+      <h4 class="goalInfo" style="color:#6a5acd">Today's meals:</h4>
+      <!--Meal_index is used because I need names(which are the indexes of the meals) for the input fields with the names of the meals-->
+      {% for meal in diet_data["meals_today"] %}
+        <h5 class="caloriesInfo"> {{meal}} <button class="addPastMeal" onclick="addPastMeal('{{meal | safe}}')">Add to today's diet +</button></h5>
+
+        <ul>
+          {% for food in diet_data["foods_today"][meal] %}
+            <li><a class="nav-link goalInfo" onclick="macroInfo('{{meal | safe}}','{{food | safe}}')">{{food}}</a></li>
+            {% endfor %}
+        </ul>
+
+      {% endfor %}
+    {% endif %}
+
+    <form action="/food_info" method="post" hidden>
+      <button type="submit" id="sendBtn"></button>
+      <input type="text" name="food_name" id="food_name">
+      <input type="text" name="meal_name" id="meal_name">
+    </form>
+
+    <script>
+      let diet_goals = {{diet_goals | safe}};
+
+      let calories_goal = {{diet_goals[0]["calories_goal"] | safe}};
+
+      let protein_goal = {{diet_goals[0]["protein_goal"] | safe}};
+      let carbs_goal = {{diet_goals[0]["carbs_goal"] | safe}};
+      let fats_goal = {{diet_goals[0]["fats_goal"] | safe}};
+
+      let calories_burned = {{diet_data["calories_burned"] | safe}};
+
+      let protein_consumed = {{diet_data["protein_nr"] | safe}};
+      let carbs_consumed = {{diet_data["carbs_nr"] | safe}};
+      let fats_consumed = {{diet_data["fats_nr"] | safe}};
+
+      function progressMacro(){
+        //Calculating the percentage of progrees made(working with the skill bars)
+        document.getElementById("calories_prog").style.width = (1.0 * calories_burned /  calories_goal * 100).toString() + "%";
+        document.getElementById("prot_prog").style.width = (1.0 * protein_consumed /  protein_goal * 100).toString() + "%";
+        document.getElementById("carbs_prog").style.width = (1.0 * carbs_consumed / carbs_goal * 100).toString() + "%";
+        document.getElementById("fats_prog").style.width = (1.0 * fats_consumed / fats_goal * 100).toString() + "%";
+
+        document.getElementById("cal_rem").innerHTML = "Calories remaining: " + ((calories_goal - calories_burned).toFixed(2)).toString();
+
+      }
+
+      progressMacro();
+
+      //Changes the value of the hidden input fields and sends the data using a form
+      function macroInfo(meal_name,food_name){
+        $("#food_name").attr("value", food_name);
+        $("#meal_name").attr("value", meal_name);
+        $("#sendBtn").click();
+      }
+
+      function addPastMeal(meal_name){
+        $.ajax({
+            url: '/calories',
+            type: 'PUT',
+            contentType: 'application/json',
+            data: JSON.stringify({"meal_name": meal_name})
+          });
+          setTimeout(() => {window.location.href = "https://lucan8-upgraded-invention-rj9g6vvg74x25rq7-5000.app.github.dev/calories";}, 300);
+      }
+
+    </script>
+{% endblock %}

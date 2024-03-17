@@ -1,0 +1,93 @@
+{% extends "edit_meal.html" %}
+
+
+{% block title %}
+    Add food
+{% endblock %}
+
+{% block add %}
+<h5 style="color:grey">Not found</h5>
+<h5 class="caloriesInfo">You can add your own food to the database</h5>
+<h6 class="caloriesInfo">Values inputed are per 100g,but into the meal will be inserted the inputed nr of grams for the food</h6>
+<input value="{{meal_name}}" id="meal_name" name="meal_name" placeholder="meal_name" type="text" hidden>
+<div class="mb-3">
+    <h5>Food name: {{food_name}}</h5>
+</div>
+<div class="mb-3">
+    <input autocomplete="off" autofocus  id="calories_nr" name="calories_nr" placeholder="Number of kcal" type="number" min="0" step="0.01">kcal
+</div>
+<div class="mb-3">
+    <input  id="protein_nr" name="protein_nr" placeholder="Number of proteins" type="number" min="0" step="0.01">
+    g
+</div>
+<div class="mb-3">
+    <input  id="carbs_nr" name="carbs_nr" placeholder="Number of carbs" type="number" min="0" step="0.01">g
+</div>
+<div class="mb-3">
+    <input  id="fats_nr" name="fats_nr" placeholder="Number of fats" type="number" min="0" step="0.01">g
+</div>
+<div class="mb-3">
+    <input  id="grams" name="grams" placeholder="grams" type="number" min="0" max="100000" step="0.01">g
+</div>
+<button class="btn btn-primary" type="submit" disabled id="add_food_btn" onclick="addFood()">Add food+</button>
+</main>
+<script>
+    let food_name = "{{food_name}}";
+
+    document.getElementById("calories_nr").addEventListener("input",function(event){
+        verify();
+    });
+
+    document.getElementById("protein_nr").addEventListener("input",function(event){
+        verify();
+    });
+
+    document.getElementById("carbs_nr").addEventListener("input",function(event){
+        verify();
+    });
+
+    document.getElementById("fats_nr").addEventListener("input",function(event){
+        verify();
+    });
+    document.getElementById("grams").addEventListener("input",function(event){
+        verify();
+    });
+
+
+    function addFood(){
+        let grams = document.getElementById("grams").value;
+
+        let calories_nr = document.getElementById("calories_nr").value;
+
+        let protein_nr = document.getElementById("protein_nr").value;
+
+        let carbs_nr = document.getElementById("carbs_nr").value;
+
+        let fats_nr = document.getElementById("fats_nr").value;
+        
+        $.ajax({
+                url: '/add_food',
+                type: 'PUT',
+                contentType: 'application/json',
+                data: JSON.stringify( {"food_name": food_name,"meal_name": meal_name,"protein_nr":protein_nr, "carbs_nr":carbs_nr, "fats_nr":fats_nr, "calories_nr":calories_nr, "grams":grams})
+            }).then(() => {window.location.href = "https://lucan8-upgraded-invention-rj9g6vvg74x25rq7-5000.app.github.dev/add_food";});
+        }
+
+        function verify(){
+            let grams = document.getElementById("grams").value;
+
+            let calories_nr = document.getElementById("calories_nr").value;
+
+            let protein_nr = document.getElementById("protein_nr").value;
+
+            let carbs_nr = document.getElementById("carbs_nr").value;
+
+            let fats_nr = document.getElementById("fats_nr").value;
+
+            if (grams && calories_nr && protein_nr && carbs_nr && fats_nr)
+                document.getElementById("add_food_btn").disabled = false;
+            else
+                document.getElementById("add_food_btn").disabled = true;
+        }
+</script>
+{% endblock %}

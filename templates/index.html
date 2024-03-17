@@ -1,0 +1,76 @@
+{% extends "layout.html" %}
+
+{% block title %}
+Home
+{% endblock %}
+
+{% block main %}
+<body class="index-background">
+<meta charset = "UTF8">
+<meta name= "viewport" content = "width=device-width, initial-scale=1.0">
+<script src = "https://cdn.jsdelivr.net/npm/chart.js@2.9.4/dist/Chart.min.js"></script>
+
+{% if nr_workouts == 0 %}
+<h2 class="welcome">Welcome ,{{username}}</h2>
+{% else %}
+<h2 class="welcome">Welcome back, {{username}}</h2>
+{% endif %}
+
+<h3 class="h3stats">Here's a few stats showing your progress so far:</h3>
+
+<div class="stats">
+    <ul>
+        <li><h4>Number of workouts completed:{{nr_workouts}}</h4></li>
+        <li><h4>Strongest lift:{{strongest_lift}}</h4></li>
+        <li><h4>True PR:{{true_rm}}</h4></li>
+        <canvas id="strongest_chart" height="400" width="600"></canvas>
+    </ul>
+</div>
+</body>
+<script>
+
+    var ctx_strongest = document.getElementById("strongest_chart").getContext("2d");//Try without getContext
+    var chartData = {
+        "dates":{{dates | safe}},
+        "PRS":{{PR_list | safe}}
+    };
+
+    var config = {
+        type:"line",
+        data:{
+            labels:chartData["dates"],
+            datasets:[
+                {
+                    label:"Data points",
+                    data:chartData["PRS"],
+                    fill:false,
+                    borderColor:"rgb(75,192,192)",
+                    backgroundColor:"#0047AB",
+                    lineTension:0.1
+                }
+            ]
+        },
+        options: {
+            legend: {
+                labels: {
+                    fontColor: "#0047AB",
+                    fontSize: 18
+                }
+        },
+        scales: {
+                yAxes: [{
+                    ticks: {
+                        fontColor: "green",
+                    }
+                }],
+                xAxes: [{
+                    ticks: {
+                        fontColor: "#ffdf00",
+                    }
+                }]
+            }
+    }
+};
+    var weightChart = new Chart(ctx_strongest, config);
+</script>
+{% endblock %}

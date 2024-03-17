@@ -1,0 +1,56 @@
+{% extends "layout.html" %}
+<!--Learn how to crate tables when button is clicked-->
+<!--Everytime add exercise button is clicked you go to python code-->
+<!--In the python code we will use a list for all the exercises,then we store all information about the curent workout into the datebase and everytime the button is clicked we display it-->
+{% block title %}
+    Workout completed
+{% endblock %}
+
+{% block main %}
+    <!--Displays active workout and gives ability to add exercices and sets-->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+    <main class="container-fluid py-5 text-center">
+    <h1>Congratulations on finishing your workout</h1>
+    <img src="static/pictures/work_com.jpg"/>
+    <h3>{{workout_name}}</h3>
+    <h4>Workout duration: {{time}}</h4>
+    </main>
+    <h3>This is your work:</h3>
+    {% for name in NEW_EXERCISES_NAMES %}
+    <table class="table table-success table-striped" id="{{name}}">
+        <thead>
+          <tr class="table-info">
+            <th scope="col" class="table-info">{{name}}</th>
+            <th scope="col" class="table-info">Sets</th>
+            <th scope="col" class="table-info">Weight</th>
+            <th scope="col" class="table-info">Reps</th>
+          </tr>
+        </thead>
+        <tbody><!-- to be added-->
+          {% for i in NEW_EXERCISES_SETS[name] %}
+          <tr class="table-info">
+            <td class="table-info"></td>
+            <td class="table-info">set {{i + 1}}</td>
+            <td class="table-info">{{NEW_EXERCISES_WEIGHT[name][i]}}kg</td>
+            <td class="table-info">{{NEW_EXERCISES_REPS[name][i]}}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    {% endfor %}
+    <script>
+        let EX_NAME = {{NEW_EXERCISES_NAMES | safe}};
+        let nrSets = {{NEW_EXERCISES_LENGTH | safe}};
+        let WEIGHT = {{NEW_EXERCISES_WEIGHT | safe}};
+        let REPS = {{NEW_EXERCISES_REPS | safe}};
+        /*
+        var seconds = Math.floor({{sec | safe}});
+        var hours = Math.floor(seconds / 3600);
+        var min = Math.floor(seconds / 60) - (hours * 60);
+        var secs = seconds % 60;
+        var time = hours.toString().padStart(2, "0") + ":" + min.toString().padStart(2, "0") + ":" + secs.toString().padStart(2, "0");
+        document.getElementById("time").innerHTML = time;
+          
+    </script>
+{% endblock %}

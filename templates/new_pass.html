@@ -1,0 +1,71 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    Changing password
+{% endblock %}
+
+{% block main %}
+<main class="container-fluid py-5 text-center">
+    <h5>Your password needs to have at least a symbol,a letter and a number</h5>
+    <form action="/new_pass" method="post">
+        <div class="mb-3">
+            <input autocomplete="off" autofocus class="form-control mx-auto w-auto" id="username" name="username" placeholder="Username" type="text">
+        </div>
+        <div class="mb-3">
+            <input class="form-control mx-auto w-auto" id="password" name="password" placeholder="Password" type="password">
+        </div>
+        <div class="mb-3">
+            <input class="form-control mx-auto w-auto" id="new_password" name="new_password" placeholder="new_password" type="password">
+        </div>
+        <button class="btn btn-primary" type="submit">Save Changes</button>
+    </form>
+</main>
+<div id="info">
+
+</div>
+<script>
+    username = document.getElementById("username");
+    password = document.getElementById("password");
+    new_pass = document.getElementById("new_pass");
+
+    info = document.getElementById("info");
+
+    username.addEventListener("beforeinput", (event) =>{
+        //regex = new RegExp("")
+        if (event.data && event.data.includes(" ")){
+            info.classList.add("divFade");
+            info.classList.add("Bad");
+            info.innerHTML = "Username can't contain spaces";
+
+            document.body.appendChild(info);
+
+            event.preventDefault();
+        }
+    });
+
+    password.addEventListener("beforeinput", (event) =>{
+        //regex = new RegExp("")
+        if (event.data && event.data.includes(" ")){
+            info.classList.add("divFade");
+            info.classList.add("Bad");
+            info.innerHTML = "Password can't contain spaces";
+
+            document.body.appendChild(info);
+
+            event.preventDefault();
+        }
+    });
+    new_pass.addEventListener("beforeinput", (event) =>{
+        //regex = new RegExp("")
+        if (event.data && event.data.includes(" ")){
+            info.classList.add("divFade");
+            info.classList.add("Bad");
+            info.innerHTML = "Confirmation can't contain spaces";
+
+            document.body.appendChild(info);
+
+            event.preventDefault();
+        }
+    });
+</script>
+{% endblock %}

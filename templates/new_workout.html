@@ -1,0 +1,850 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    New workout
+{% endblock %}
+
+{% block main %}
+    <!--Displays active workout and gives ability to add exercices and sets-->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+    <main class="container-fluid py-5 text-center">
+      <h3 contenteditable style="display:inline;">{{workout_name}}</h3>
+      <h4>Time passed:</h4>
+      <h4 id="time"></h4>
+      <button class="endWorkout"  type="submit" id="stop" onclick="stop_time()">End workout </button>
+      <button onclick="popUp()" class="deleteWorkout">Discard workout</button>
+      <h5>Note:weight and reps can't be left blank</h5>
+
+      <button class="btn btn-primary" style="background-color:blue;border-color:black;color:white;height:29.2px;line-height:0px;" type="submit" id="add" onclick="addExercise(this)" disabled>Add exercise +</button>
+      <button onclick="createExercise()" class="createFood" id="create_btn" disabled>Create Exercise</button>
+      <input type = "text" id="ex_name" name="ex_name" placeholder="Exercise name" list="suggestions_list">
+
+      <form method="post" action="/exercise_info" style="display:inline">
+        <button type="submit" class="addPastMeal" disabled id="ex_info_btn">Info</button>
+        <input type="text" hidden name="ex_name" id="name_info">
+        <input type="text" hidden name="ex_muscle" id="muscle_info" >
+        <input type="text" hidden name="ex_instructions" id="instructions_info">
+        <input type="text" hidden name="status" id="status" value="nW">
+      </form>
+
+      <div id="create_exercise" style="display:none">
+        <textarea rows="5" cols="60" name="text" placeholder="Notes for exercise(not necessary)" id="ex_notes"></textarea>
+        <div></div>
+        <select  id="muscle_list"><!--Make this look nice with css-->
+          <option disabled selected>Choose muscle group</option>
+          <option value="abdominals">abdominals</option>
+          <option value="abductors">abductors</option>
+          <option value="adductors">adductors</option>
+          <option value="biceps">biceps</option>
+          <option value="calves">calves</option>
+          <option value="chest">chest</option>
+          <option value="forearms">forearms</option>
+          <option value="glutes">glutes</option>
+          <option value="hamstrings">hamstrings</option>
+          <option value="lats">lats</option>
+          <option value="lower_back">lower_back</option>
+          <option value="middle_back">middle_back</option>
+          <option value="neck">neck</option>
+          <option value="quadriceps">quadriceps</option>
+          <option value="shoulders">shoulders</option>
+          <option value="traps">traps</option>
+          <option value="triceps">triceps</option>
+        </select>
+      </div>
+      <h4 id="notFound_div" class="notFoundEx">
+
+      </h4>
+      <datalist id="suggestions_list">
+      </datalist>
+    </main>
+    {% for name in NEW_EXERCISES_NAMES %}
+    <table class="table table-success table-striped" id="{{name}}">
+        <thead>
+          <tr class="table-info">
+            <th scope="col" class="table-info">{{name}}</th>
+            <th scope="col" class="table-info">Weight</th>
+            <th scope="col" class="table-info">Reps</th>
+            <th scope="col" class="table-info"><button class="delete_exerciseColor" type="submit" value="{{name}}" onclick="deleteExercise(this.value)">Delete exercise</button></th>
+            <th scope="col" class="table-info"><button type="submit" class="addPastMeal" onclick="clickInfo('{{name}}','','')">Info</button></th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for i in NEW_EXERCISES_SETS[name] %}
+          <tr class="table-info">
+            <td class="table-info" id="{{name}}_set_{{i}}">set {{i + 1}}</td>
+            <td class="table-info"><input type = "number" id="{{name}}_{{i}}_weight" value="{{NEW_EXERCISES_WEIGHT[name][i]}}" min="0" max="999"><div id="{{name}}_{{i}}_weight_message">in kg</div></td>
+            <td class="table-info"><input type = "number" id="{{name}}_{{i}}_reps" min="0" max="999" value="{{NEW_EXERCISES_REPS[name][i]}}"><div id="{{name}}_{{i}}_reps_message"></div></td>
+            {% if NEW_EXERCISES_LENGTH[name] == 1 %}
+               <td class="table-info"><button class="delete_setColor" type="submit" name="{{name}}" value="{{i}}" id="{{name}}_del_{{i}}" onclick="deleteSet(this.name,this.value)" disabled="disabled">Delete set</button></td>
+            {% else %}
+               <td class="table-info"><button class="delete_setColor" type="submit" name="{{name}}" value="{{i}}" id="{{name}}_del_{{i}}" onclick="deleteSet(this.name,this.value)">Delete set</button></td>
+            {% endif %}
+            <td></td>
+            {% if saved[name][i] == 'y' %}
+               <td><input type="checkbox" id="{{name}}_{{i}}_check" name="{{i}}" onclick="saveSet(this.name,'{{name}}')" checked></td>
+            {% else %}
+               <td><input type="checkbox" id="{{name}}_{{i}}_check" name="{{i}}" onclick="saveSet(this.name,'{{name}}')"></td>
+            {% endif %}
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    <button class="btn btn-primary add_setColor" type="submit" id="{{name}}_addSet" name="{{name}}_addSet" value="{{name}}" onclick="addSet(this.value)">Add set +</button>
+{% endfor %}
+  <!--Display pop up-->
+<div class="popup">
+  <div class="popup-content">
+      <h3 style="text-align:center;">Are you sure you want to discard this workout?</h3>
+      <p></p>
+      <button class="yes" style="display:inline;" onclick="deleteWorkout()">YES</button>
+      <button class="no" style="display:inline;" onclick="closePopUp()">NO</button>
+  </div>
+</div>
+<script>
+        if (window.location.href == 'https://lucan8-upgraded-invention-rj9g6vvg74x25rq7-5000.app.github.dev/workouts')
+            window.location.href = 'https://lucan8-upgraded-invention-rj9g6vvg74x25rq7-5000.app.github.dev/new_workout';
+        //Hides the continue button from user
+        document.getElementById("continue").style.display = "none";
+        //The workout name gets edited
+        $('h3').on('input', function(){
+          $.ajax({
+                url: '/edit_name',
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify( {"changed":'workouts', "new":$(this).html()})
+              });
+        });
+
+        document.getElementById("ex_name").addEventListener("beforeinput", (event) =>{
+          if (event.data && !isAlpha(event.data))
+              event.preventDefault();
+        });
+
+        //Declaration:
+        let EX_NAME = {{NEW_EXERCISES_NAMES | safe}};//Exercises present in workout and sent from database
+
+        let nrSets = {{NEW_EXERCISES_LENGTH | safe}};//The number of sets for each exercise present in workout and sent from database
+
+        //The weight and reps for each exercises sent as dictionaries from database
+        let WEIGHT = {{NEW_EXERCISES_WEIGHT | safe}};
+        let REPS = {{NEW_EXERCISES_REPS | safe}};
+
+        let DATABASE_EX = {{database_ex | safe}};
+
+        //Hidden input fields of the ex_info form
+        let infoName = document.getElementById("name_info");
+        let infoMuscle = document.getElementById("muscle_info");
+        let infoInstructions = document.getElementById("instructions_info");
+
+        //For ex_info we need to be able to tell where the req is coming from and if the exercise is present
+        //in template/workout
+        let status = document.getElementById("status");
+
+        //Marks exercise if it s created
+        let created = false;
+
+        var seconds = Math.floor({{sec | safe}});
+        let id = setInterval(setTime, 1000);
+
+        //This is for the sets that are already in the workout
+        for (ex_name of EX_NAME){
+          for (let j = 0; j < nrSets[ex_name]; j++){
+            document.getElementById(ex_name + "_" + j.toString() + "_weight").addEventListener("input",infoMessage.bind(null, "weight", ex_name, j));
+            document.getElementById(ex_name + "_" + j.toString() + "_reps").addEventListener("input",infoMessage.bind(null, "reps", ex_name, j));
+          }
+        }
+        //This our timer function that gets executed every second
+        function setTime(){
+            var hours = Math.floor(seconds / 3600);
+            var min = Math.floor(seconds / 60) - (hours * 60);
+            var secs = seconds % 60;
+            var time = hours.toString().padStart(2, "0") + ":" + min.toString().padStart(2, "0") + ":" + secs.toString().padStart(2, "0");
+            document.getElementById("time").innerHTML = time;
+            seconds++;
+        }
+
+        //If there is smth in the input field this function enables user to choose muscle group and add notes
+        function createExercise(){
+          if (!document.getElementById("ex_name").value){
+            $("#create_btn").prop('disabled', true);
+              return;
+          }
+
+          $("#create_exercise").css("display", "block");
+          alert("After choosing muscle and adding notes press add exercise");
+        }
+
+        //Making sure the user can add the exercise only after they select a muscle
+        $("#muscle_list").on("change",(event)=>{
+          add_ex_btn.disabled = false;
+          created = true;
+        });
+        function addExercise(add){
+            //user input verification
+            let ex_name = document.getElementById("ex_name").value;
+
+            ex_name = (ex_name.toLowerCase()).trim();
+
+            //Sending the exercise to be inserted into db
+            if (created){
+              let muscle = document.getElementById("muscle_list").value;
+              let instructions = ($("#ex_notes").val()).trim();
+
+              $.ajax({
+                url: '/add_workout',
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify( {"ex_name":ex_name, "muscle":muscle, "instructions":instructions})
+              });
+              //Updating the hidden input fields, their values will be used when we add the onclick for info btn
+              infoName.value = ex_name;
+              infoMuscle.value = muscle;
+              infoInstructions.value = instructions
+              $("#create_exercise").css("display", "none");
+            }
+            //This means the exercises exists already in one of the databases so we just insert it into workout
+            else
+                {
+                  $.ajax({
+                    url: '/add_workout',
+                    type: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify( {"ex_name":ex_name})
+                  });
+                  //Updating the hidden input fields, their values will be used when we add the onclick for info btn
+                  infoName.value = ex_name;
+                  infoMuscle.value = '';
+                  infoInstructions.value = ''
+                }
+
+            EX_NAME.push(ex_name);
+            nrSets[ex_name] = 1;
+
+            //Create table
+            let table = document.createElement("table");
+            table.name = ex_name;
+            table.id = ex_name;
+
+            table.classList.add("table");
+            table.classList.add("table-success");
+            table.classList.add("table-striped");
+
+            createTbody(table);
+
+            createThead(table);
+
+            document.body.appendChild(table);
+
+
+            //create button for adding sets
+            let add_set = document.createElement("button");
+            let btn_txt = document.createTextNode("Add set +");
+
+            add_set.appendChild(btn_txt);
+
+            add_set.type = "submit";
+            add_set.classList.add("btn");
+            add_set.classList.add("btn-primary");
+            add_set.classList.add("add_setColor");
+
+            add_set.name = ex_name + "_addSet";
+            add_set.value = ex_name;
+            add_set.id = ex_name + "_addSet";
+            //Setting up onclick for the 'add set' button
+            //This inserts a new row in the body of a table
+            document.body.appendChild(add_set);
+
+            add_set.setAttribute("onclick", `addSet('${ex_name}')`);
+
+            $('#ex_name').val('');
+            add.disabled = true;
+            $('#ex_info_btn').prop('disabled', true);
+        }
+        //This is for the buttons already created
+        function addSet(ex_name){
+                if (!(nrSets.hasOwnProperty(ex_name))){
+                    nrSets[ex_name] = 1;
+                }
+                nrSets[ex_name]++;
+
+                if (nrSets[ex_name] == 2)
+                    document.getElementById(ex_name + "_del_0").disabled = false;
+
+                //Sending the set to be inserted into db
+                $.ajax({
+                    url: '/add_workout',
+                    type: 'PUT',
+                    contentType: 'application/json',
+                    data: JSON.stringify( {"ex_name":ex_name,"set_nr":nrSets[ex_name] - 1})
+                });
+
+                // Get the table element in which you want to add row
+                let table = document.getElementById(ex_name);
+
+                // Create a row using the inserRow() method and
+                // specify the index where you want to add the row
+                let row = table.insertRow(-1); // We are adding at the end
+                row.classList.add("table-info");
+
+                let weight = document.createElement("input");
+
+                let div_weight = document.createElement("div");
+                div_weight.id = ex_name.toString() + "_" + (nrSets[ex_name] - 1).toString() + "_weight_message";
+
+                weight.type = "number";
+
+                weight.value = "0.0";
+                weight.min = "0";
+                weight.max = "999";
+
+                weight.placeholder = "weight"
+                weight.id = ex_name.toString() + "_" + (nrSets[ex_name] - 1).toString() + "_weight";
+
+                reps = document.createElement("input");
+
+                let div_reps = document.createElement("div");
+                div_reps.id = ex_name.toString() + "_" + (nrSets[ex_name] - 1).toString() + "_reps_message";
+
+                reps.type = "number";
+
+                reps.value = "0";
+                reps.min = "0";
+                reps.max = "999";
+
+                reps.placeholder = "reps"
+                reps.id = ex_name.toString() + "_" + (nrSets[ex_name] - 1).toString() + "_reps";
+
+                let delete_set = document.createElement("button");
+                let btn_txt = document.createTextNode("Delete set");
+
+                delete_set.appendChild(btn_txt);
+
+                delete_set.type = "submit";
+
+                delete_set.classList.add("delete_setColor");
+
+                delete_set.name = ex_name;
+                delete_set.value = (nrSets[ex_name] - 1).toString();
+                delete_set.id = ex_name + "_del_" + (nrSets[ex_name] - 1).toString();
+
+                //Setting onclick for delete_set
+                delete_set.setAttribute("onclick", `deleteSet('${ex_name}','${delete_set.value}')`);
+
+                let check = document.createElement("input");
+                check.type = 'checkbox';
+                check.id = ex_name + '_' + (nrSets[ex_name] - 1).toString() + '_check';
+
+                //See if nrSets works
+                check.setAttribute('onclick',`saveSet('${nrSets[ex_name] - 1}','${ex_name}')`);
+
+                //Inserting table cells
+                let c1 = row.insertCell(0);
+                let c2 = row.insertCell(1);
+                let c3 = row.insertCell(2);
+                let c4 = row.insertCell(3);
+                let c5 = row.insertCell(4);
+                let c6 = row.insertCell(5);
+
+                c1.classList.add("table-info");
+                c2.classList.add("table-info");
+                c3.classList.add("table-info");
+                c4.classList.add("table-info");
+                c5.classList.add("table-info");
+                c6.classList.add("table-info");
+
+                // Add data to c2
+                c1.innerText = "set " + nrSets[ex_name].toString();
+                c1.id = ex_name + "_set_" + (nrSets[ex_name] - 1).toString();
+
+                c2.appendChild(weight);
+                c2.appendChild(div_weight);
+
+                div_weight.innerHTML = "in kg";
+
+                c3.appendChild(reps);
+                c3.appendChild(div_reps);
+
+                c4.appendChild(delete_set);
+                c6.appendChild(check)
+
+                //This is for the sets getting added at the exercises already created
+                weight.addEventListener("input",infoMessage.bind(null, "weight", ex_name, nrSets[ex_name] - 1));
+                reps.addEventListener("input",infoMessage.bind(null, "reps", ex_name, nrSets[ex_name] - 1));
+
+              }
+
+        function stop_time(){
+          //If there are checkboxes not checked we don't let user finish workout
+          var checkBoxes = $('input:checkbox');
+          for (checkBox of checkBoxes)
+            if (!checkBox.checked){
+              alert("Save all your sets by checking the boxes");
+              return;
+            }
+          clearInterval(id);
+          window.location.href = 'https://lucan8-upgraded-invention-rj9g6vvg74x25rq7-5000.app.github.dev/stop_workout';
+        }
+
+        function createThead(table){
+          let thead = table.createTHead();
+          let row = thead.insertRow();
+          row.classList.add("table-info");
+
+          let th1 = document.createElement("th");
+          th1.scope = "col";
+          th1.classList.add("table-info");
+          let text1 = document.createTextNode(table.name);
+          th1.appendChild(text1);
+
+          let th2 = document.createElement("th");
+          th2.scope = "col";
+          th2.classList.add("table-info");
+          let text2 = document.createTextNode("Weight");
+          th2.appendChild(text2);
+
+          let th3 = document.createElement("th");
+          th3.scope = "col";
+          th3.classList.add("table-info");
+          let text3 = document.createTextNode("Reps");
+          th3.appendChild(text3);
+
+          //Creating th with delete exercise button
+          let th4 = document.createElement("th");
+          th4.scope = "col";
+          th4.classList.add("table-info");
+
+          let delete_exercise = document.createElement("button");
+          let btn_txt = document.createTextNode("Delete exercise");
+
+          delete_exercise.appendChild(btn_txt);
+
+          delete_exercise.type = "submit";
+
+          delete_exercise.classList.add("delete_exerciseColor");
+
+          delete_exercise.name = table.id + "_delEx";
+          delete_exercise.value = table.id;
+          delete_exercise.id = table.id + "_delEx";
+
+          //Setting onclick for delete_exercise
+          delete_exercise.setAttribute("onclick", ` deleteExercise('${table.id}')`);
+
+          th4.appendChild(delete_exercise);
+
+          //Creating th with info btn
+          let th5 = document.createElement("th");
+          th5.scope = "col";
+          th5.classList.add("table-info");
+
+          let info_btn = document.createElement("button")
+          let info_txt = document.createTextNode("Info")
+
+          info_btn.appendChild(info_txt);
+
+          info_btn.classList.add("addPastMeal");
+          info_btn.setAttribute("onclick", `clickInfo('${infoName.value}','${infoMuscle.value}',"${infoInstructions.value}")`);
+          info_btn.type = "submit";
+
+          th5.appendChild(info_btn);
+
+          //For the checkboxes
+          let th6 = document.createElement("th");
+          th6.scope = "col";
+          th6.classList.add("table-info");
+
+          row.appendChild(th1);
+          row.appendChild(th2);
+          row.appendChild(th3);
+          row.appendChild(th4);
+          row.appendChild(th5);
+          row.appendChild(th6);
+        }
+
+        //This creates the body by also adding the first set
+        function createTbody(table){
+          let ex_name = table.name;
+
+          let row = table.insertRow(); // We are adding at the end
+          row.classList.add("table-info");
+
+          //creating the 'weight' input field
+          let weight = document.createElement("input");
+
+          let div_weight = document.createElement("div");
+          div_weight.id = ex_name.toString() + "_0_weight_message";
+
+          var weight_txt = document.createTextNode("kg");
+
+          weight.type = "number";
+
+          weight.value = "0.0";
+          weight.min = "0";
+          weight.max = "999";
+
+          weight.placeholder = "numeric";
+          weight.id = ex_name.toString() + "_0_weight";
+
+          //creating the 'weight' input field
+          reps = document.createElement("input");
+
+          let div_reps = document.createElement("div");
+          div_reps.id = ex_name.toString() + "_0_reps_message";
+
+          reps.type = "number";
+
+          reps.value = "0";
+          reps.min = "0";
+          reps.max = "999";
+
+          reps.placeholder = "numeric"
+          reps.id = ex_name.toString() + "_0_reps";
+
+          //Delete set button gets created
+          let delete_set = document.createElement("button");
+          let btn_txt = document.createTextNode("Delete set");
+
+          delete_set.appendChild(btn_txt);
+
+          delete_set.type = "submit";
+
+          delete_set.classList.add("delete_setColor");
+
+          delete_set.name = ex_name;
+          delete_set.value = "0";
+          delete_set.id =  ex_name + "_del_0";
+
+          delete_set.disabled = true;
+
+
+          delete_set.setAttribute("onclick", `deleteSet('${ex_name}','0')`);
+
+          let check = document.createElement("input");
+          check.type = 'checkbox';
+          check.id = ex_name + '_0_check';
+
+          check.setAttribute('onclick',`saveSet('${0}','${ex_name}')`);
+
+          // Create table cells
+          let c1 = row.insertCell(0);
+          let c2 = row.insertCell(1);
+          let c3 = row.insertCell(2);
+          let c4 = row.insertCell(3);
+          let c5 = row.insertCell(4);
+          let c6 = row.insertCell(5);
+
+          c1.classList.add("table-info");
+          c2.classList.add("table-info");
+          c3.classList.add("table-info");
+          c4.classList.add("table-info");
+          c5.classList.add("table-info");
+          c6.classList.add("table-info");
+
+          // Add data to c1 and c2
+          c1.innerText = "set 1";
+          c1.id = ex_name + "_set_0";
+
+          c2.appendChild(weight);
+          c2.appendChild(div_weight);
+          div_weight.innerHTML = "in kg";
+
+          c3.appendChild(reps);
+          c3.appendChild(div_reps);
+
+          c4.appendChild(delete_set);
+          c6.appendChild(check)
+
+          //This is for the first set of a new exercise
+          weight.addEventListener("input",infoMessage.bind(null, "weight", ex_name, 0));
+          reps.addEventListener("input",infoMessage.bind(null, "reps", ex_name, 0));
+        }
+
+        //Activates pop-up "Are you sure"
+        function popUp(){
+          let popup = document.getElementsByClassName("popup");
+          popup[0].classList.add("show");
+        }
+
+        //Deactivates PopUp
+        function closePopUp(){
+          let popup = document.getElementsByClassName("popup");
+          popup[0].classList.remove("show");
+        }
+
+        //Deletes workout and sends user to workouts page
+        function deleteWorkout(){
+          $.ajax({
+                url: '/delete',
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify({})
+              }).then(() => {window.location.href = "https://lucan8-upgraded-invention-rj9g6vvg74x25rq7-5000.app.github.dev/workouts"});
+        }
+        function deleteExercise(ex_name){
+           poz = 0;
+
+           table = document.getElementById(ex_name);
+           add_set = document.getElementById(ex_name + "_addSet");
+          $.ajax({
+                url: '/delete',
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify( {"ex_name":ex_name})
+              });
+          delete nrSets[ex_name];
+
+          for (let i = 0; i < EX_NAME.length; i++)
+              if (ex_name == EX_NAME[i]){
+                poz = i;
+                break;
+              }
+
+          EX_NAME.splice(poz, 1);//This removes the ex_name found at poz
+          table.remove();
+          add_set.remove();
+        }
+
+        function deleteSet(ex_name, aux_set){
+          let set = parseInt(aux_set);
+          //Deleting set from db
+          $.ajax({
+                url: '/delete',
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify({"ex_name":ex_name, "set_nr":set})
+              });
+          table = document.getElementById(ex_name);
+
+          for (let i = set + 1; i < table.rows.length - 1; i++){
+            //maybe make this a function
+            //decreasing the set number
+            document.getElementById(ex_name + "_set_" + i.toString()).innerHTML = "set " + i.toString();
+            document.getElementById(ex_name + "_set_" + i.toString()).id = ex_name + "_set_" + (i - 1).toString();
+
+            //changing the id of the input fields weight and reps to the ids of the preceding sets
+            document.getElementById(ex_name + "_" + i.toString() +  "_weight").id = ex_name + "_" + (i - 1).toString() +  "_weight";
+            document.getElementById(ex_name + "_" + i.toString() +  "_reps").id = ex_name + "_" + (i - 1).toString() +  "_reps";
+
+            //changing the id of the divs for the special message of weight and reps to the ids of the preceding sets
+
+            document.getElementById(ex_name + "_" + i.toString() +  "_weight_message").id = ex_name + "_" + (i - 1).toString() +  "_weight_message";
+            document.getElementById(ex_name + "_" + i.toString() +  "_reps_message").id = ex_name + "_" + (i - 1).toString() +  "_reps_message";
+
+            let del_set = document.getElementById(ex_name + "_del_" + (i).toString());
+            let check_set = document.getElementById(ex_name + "_" + (i).toString() +  "_check");
+            //changing id and value of the delete button to the ones of the preceding set
+            del_set.value = (i - 1).toString();
+            del_set.id = ex_name + "_del_" + (i - 1).toString();
+            del_set.setAttribute('onclick',`deleteSet('${ex_name}','${i-1}')`);
+
+            //changing id and name of checkBox to the ones of the preceding set
+            check_set.name = (i - 1).toString();
+            check_set.id = ex_name + "_" + (i - 1).toString() +  "_check";
+            check_set.setAttribute('onclick',`saveSet('${i-1}','${ex_name}')`);
+
+          }
+
+          nrSets[ex_name]--;
+
+          table.deleteRow(set + 1);
+
+          if (table.rows.length == 2)
+             document.getElementById(ex_name + "_del_0").disabled = "true";
+        }
+
+        function is_numeric(str){
+          var numeric = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9", ",", "."];
+          nr = 0;
+          if (str[0] == ',' || str[0] == '.')
+              return 0;
+          if (str.length > 1 && str[0] == 0 && (str[1] != '.' && str[1] != ','))
+             return 0;
+          for (char of str)
+          {
+                if (!numeric.includes(char)){
+                  return 0;
+                }
+                else
+                  if (char == ',' || char == '.')
+                    nr++;
+              if (nr > 1)
+                return 0;
+            }
+          return 1;
+        }
+
+        function isAlpha(str){
+          let regex = new RegExp("[a-zA-Z0-9 &()\/\-]");
+
+          if (str.match(regex))
+             return true;
+          return false;
+        }
+
+        //Presents a message to the user depending on what they type into the input fields
+        function infoMessage(type, ex_name, set_nr, event){
+          let val = event.target.value;
+          let checkBox = document.getElementById(ex_name + '_' + set_nr.toString() + '_check');
+
+          //If there is any change in the weight and reps input fields and the box is checked
+          //We remove the check from box
+          if (checkBox.checked){
+            checkBox.checked = false;
+
+            $.ajax({
+              type:'POST',
+              url:'/save_set',
+              contentType:'application/json',
+              data:JSON.stringify({'ex_name':ex_name, 'set':set_nr})
+            });
+          }
+
+          if (!is_numeric(val)){
+            document.getElementById(ex_name + "_" + set_nr.toString() + "_" + type + "_message").innerHTML = "NOT NUMERIC";
+          }
+          else if(!val) document.getElementById(ex_name + "_" + set_nr.toString() + "_" + type + "_message").innerHTML = "INSERT VALUE";
+          else{
+            if (type == "weight")
+              document.getElementById(ex_name + "_" + set_nr.toString() + "_weight_message").innerHTML = "in kg";
+            else
+              document.getElementById(ex_name + "_" + set_nr.toString() + "_reps_message").innerHTML = "";
+          }
+
+        }
+        let add_ex_btn = document.getElementById("add");
+
+        suggestions = document.getElementById("suggestions_list");
+
+        $("#ex_name").on("input", function(event){
+          let ex_name = ((event.target.value).toLowerCase()).trim();
+          let input = event.target;
+
+          if (ex_name == ""){
+              add_ex_btn.disabled = true;
+              $("#create_btn").prop("disabled", true);
+              $("#create_exercise").css("display", "none");
+              return;
+          }
+
+          const settings = {
+          async: true,
+          crossDomain: true,
+          url: 'https://exercises-by-api-ninjas.p.rapidapi.com/v1/exercises?name=' + ex_name,
+          method: 'GET',
+          headers: {
+            'X-RapidAPI-Key': '58a63dc3b0msh579d67bed6ce70bp1f6552jsnf0d699611444',
+            'X-RapidAPI-Host': 'exercises-by-api-ninjas.p.rapidapi.com'
+          }
+        };
+        $.ajax(settings).then((result)=>{
+          result.push.apply(result, DATABASE_EX)
+          showResults(result, ex_name, input);
+        });
+        });
+
+        function showResults(exercises, ex_name, input){
+          let found = false;
+          $(suggestions).empty();
+
+          if (exercises.length){
+            document.getElementById("notFound_div").innerHTML = "";
+
+            for (let i = 0, l = exercises.length; i < l; i++){
+              if (exercises[i]["name"].toLowerCase() == ex_name){
+                  found = true;
+
+                  input.value = exercises[i]["name"];
+
+                  if(!EX_NAME.includes(ex_name)){
+
+                      add_ex_btn.disabled = false;
+                      status.value = 'nW';
+                  }
+                  else{
+                    add_ex_btn.disabled = true;
+                    status.value = 'y'
+                  }
+
+                  $("#create_btn").prop("disabled", true);
+
+                  $("#create_exercise").css("display", "none");
+
+                  $("#ex_info_btn").prop("disabled", false);
+
+                  infoName.value = ex_name;
+                  infoMuscle.value = exercises[i]["muscle"];
+                  infoInstructions.value = exercises[i]["instructions"];
+              }
+
+              let ex = document.createElement("option");
+
+              ex.value = exercises[i]["name"];
+
+              ex.classList.add("autoComplete");
+
+              suggestions.appendChild(ex);
+            }
+          }
+          else{
+            document.getElementById("notFound_div").innerHTML = "Not found: Click create exercise to create own exercise";
+          }
+
+          if (found == false)
+             {
+              status.value = 'nW';
+
+              $("#ex_info_btn").prop("disabled", true);
+              $("#create_btn").prop("disabled", false);
+
+              add_ex_btn.disabled = true;
+
+              if ($('#muscle_list').val());
+                  $('#muscle_list').val('Choose muscle group');
+             }
+        }
+
+        //Sends info about ex to form and clicks the button
+        function clickInfo(name, muscle, instructions){
+
+            infoName.value = name;
+            infoMuscle.value = muscle;
+            infoInstructions.value = instructions;
+            status.value = 'y';
+
+            $("#ex_info_btn").prop("disabled",false);
+            $("#ex_info_btn").click();
+      }
+      function saveSet(set, ex_name){
+        if (document.getElementById(ex_name + '_' + set + '_check').checked){
+
+          weight = document.getElementById(ex_name + '_' + set + '_weight').value;
+          reps = document.getElementById(ex_name + '_' + set + '_reps').value;
+
+          if (!weight || !reps || !is_numeric(weight) || !is_numeric(reps)){
+            alert('Insert weight and reps that are numeric');
+            document.getElementById(ex_name + '_' + set + '_check').checked = false;
+            return;
+          }
+          set = parseInt(set);
+          weight = parseFloat(weight);
+          reps = parseInt(reps);
+
+          $.ajax({
+            type:'POST',
+            url:'/save_set',
+            contentType:'application/json',
+            data:JSON.stringify({'ex_name':ex_name, 'set':set, 'weight':weight, 'reps':reps, 'saved':'y'})
+        });
+      }
+      else{
+        set = parseInt(set);
+        $.ajax({
+            type:'POST',
+            url:'/save_set',
+            contentType:'application/json',
+            data:JSON.stringify({'ex_name':ex_name, 'set':set})
+        });
+      }
+      }
+    </script>
+{% endblock %}

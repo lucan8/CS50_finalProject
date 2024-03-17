@@ -1,0 +1,92 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    Food_info
+{% endblock %}
+
+{% block main %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@3.0.0/dist/chart.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
+<form method="get" action="/add_food">
+    <button class="backToMeal">Back to meal</button>
+</form>
+<main class="container-fluid py-5 text-center">
+    {% if searched == 'n' %}
+        <h6 class="caloriesInfo">Nr of grams:{{food["g"]}}</h6>
+    {% else %}
+        <h6 class="caloriesInfo">Per 100g of serving</h6>
+    {% endif %}
+
+    <h3 class="goalInfo">Food name: {{food["name"]}}</h3>
+    <h4 class="goalInfo">Calories: {{food["calories_nr"]}}</h4>
+    <canvas  id="food_chart"></canvas>
+
+    <!--Adding searched from from food_info-->
+    <form action="/add_food" method="post">
+        <button disabled class="searchFood" id="add_to_meal">Add to meal</button>
+        {% if searched == 'y' %}
+        <input name="grams" placeholder="grams" id="grams" type="number" min="0" max="100000" step="0.01">
+        <input name="food_name" value="{{food['name']}}" hidden>
+        {% endif %}
+    </form>
+</main>
+
+<script>
+    var ctx = document.getElementById("food_chart").getContext("2d");
+    var chart = new Chart(ctx,{
+        type:'pie',
+        data:{
+            labels:['Protein(g)', 'Carbohydrates(g)', 'Fats(g)'],
+            datasets:[
+            {
+                label:'Data points',
+                data:[{{food["protein_nr"] | safe}}, {{food["carbs_nr"] | safe}}, {{food["fats_nr"] | safe}}],
+                backgroundColor: [
+                    '#04AA6D',
+                    '#2196F3',
+                    '#800080'
+                ],
+                hoverOffset: 4
+            }]
+        },
+        //This is for the percentage written into the chart
+        options:{
+            responsive: true,
+            plugins: {
+                datalabels:{
+                    align:'center',
+                    color:'white',
+                    //Another way to write a function
+                    formatter:(value,context) =>{
+                        //This gets the list of values from above
+                        //protein_nr,carbs_nr,fats_nr
+                        //You can use console log with the browser inspect
+                        let macro_list = context.chart.config.data.datasets[0].data;
+                        let macro_sum = 0;
+
+                        for (let i = 0, l = macro_list.length; i < l; i++)
+                           macro_sum = macro_sum + macro_list[i];
+
+                        macro_percentage = (1.0*(value / macro_sum * 100).toFixed(2)).toString() + "%";
+                        return macro_percentage;
+                    }
+                }
+            }
+        },
+        plugins: [ChartDataLabels]
+    });
+    chart.canvas.parentNode.style.height = '700px';
+    chart.canvas.parentNode.style.width = '500px';
+
+    var searched = "{{searched | safe}}";
+
+    //If the user got here after clicking on a link from a food that they searched we need to give them
+    //ability to insert the nr of grams
+    if (searched == "y")
+       $("#grams").on("input", function(event){
+           if (event.target.value)
+              $("#add_to_meal").prop('disabled',false);
+    });
+
+</script>
+{% endblock %}

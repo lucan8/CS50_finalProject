@@ -1,0 +1,52 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    Log In
+{% endblock %}
+
+{% block main %}
+<main class="container-fluid py-5 text-center">
+    <form action="/login" method="post">
+        <div class="mb-3">
+            <input autocomplete="off" autofocus class="form-control mx-auto w-auto" id="username" name="username" placeholder="Username" type="text">
+        </div>
+        <div class="mb-3">
+            <input class="form-control mx-auto w-auto" id="password" name="password" placeholder="Password" type="password">
+        </div>
+        <button class="btn btn-primary" type="submit">Log In</button>
+    </form>
+</main>
+<div id="info">
+
+</div>
+<script>
+    password = document.getElementById("password");
+    username = document.getElementById("username");
+    info = document.getElementById("info");
+
+    password.addEventListener("beforeinput", (event) =>{
+        //regex = new RegExp("")
+        if (event.data && event.data.includes(" ")){
+            info.classList.add("divFade");
+            info.classList.add("Bad");
+            info.innerHTML = "Password can't contain spaces";
+
+            document.body.appendChild(info);
+
+            event.preventDefault();
+        }
+    });
+    username.addEventListener("beforeinput", (event) =>{
+        if (event.data && event.data.includes(" ")){
+            info.classList.add("divFade");
+            info.classList.add("Bad");
+            info.innerHTML = "Username can't contain spaces";
+
+            document.body.appendChild(info);
+
+            event.preventDefault();
+        }
+
+    });
+</script>
+{% endblock %}

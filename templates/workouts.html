@@ -1,0 +1,105 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    Workouts
+{% endblock %}
+{% block main %}
+
+<div class="titleContainer">
+  <h1>Workouts</h1>
+</div>
+    <main class="container-fluid py-5 text-center">
+      <div>
+      </div>
+<div>
+  {% if active == 'workout in progress' %}
+    <button class="btn btn-primary" style="background-color:blue;border-color:black;color:white" type="submit" id="start" onclick="popUp()" disabled>Start an empty workout +</button>
+  {% else %}
+    <button class="btn btn-primary" style="background-color:blue;border-color:black;color:white" type="submit" id="start" onclick="start()" disabled>Start an empty workout +</button>
+  {% endif %}
+    <input type="text" name="workout_name" id="workout_name" autofocus placeholder="Workout name">
+</div>
+      <form action="/past_workouts" method="post">
+          <input type="submit" id="see" name="workout_id" hidden>
+      </form>
+</main>
+<form action="/workouts" method="post">
+  <input type="submit" name="workout_name" hidden>
+</form>
+{% if workouts %}
+  <table class="table table-success table-hover" id="table_workouts">
+      <thead>
+        <tr class="table-succes">
+          <th scope="col" class="table-succes">Name</th>
+          <th scope="col" class="table-succes">Duration</th>
+          <th scope="col" class="table-succes">Date</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% if active == 'workout in progress' %}
+        <tr class="table-succes" onclick="window.location.href = '/new_workout'">
+          <td class="table-succes">{{workouts[0]["name"]}}</td>
+          <td class="table-succes">{{workouts[0]["workout_duration"]}}</td>
+          <td class="table-succes">{{workouts[0]["start_date"]}}</td>
+        </tr>
+        <!--In case no workout has been performed-->
+        {% elif active != 0 %}
+        <tr class="table-succes" onclick="search_workout({{workouts[0]['id']}})">
+          <td class="table-succes">{{workouts[0]["name"]}}</td>
+          <td class="table-succes">{{workouts[0]["workout_duration"]}}</td>
+          <td class="table-succes">{{workouts[0]["start_date"]}}</td>
+        </tr>
+        {% endif %}
+        {% for i in length %}
+        <tr class="table-succes" onclick="search_workout({{workouts[i]['id']}})">
+          <td class="table-succes">{{workouts[i]["name"]}}</td>
+          <td class="table-succes">{{workouts[i]["workout_duration"]}}</td>
+          <td class="table-succes">{{workouts[i]["start_date"]}}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+  </table>
+{% else %}
+  <h2 style="text-align:center;color:gray">No workouts performed</h2>
+{% endif %}
+
+<div class="popup">
+  <div class="popup-content">
+      <h3 style="text-align:center;">You still have an ongoing workout</h3>
+      <p></p>
+      <button class="removeMeal" style="display:inline;" onclick="start()">Start workout</button>
+      <a style="color: gray; display: inline; float:right;" href="/new_workout">Continue active workout</a>
+  </div>
+</div>
+<script>
+    //Disabling the start button if there is nothing in the input field
+    $("#workout_name").on("input", (event) =>{
+      if (event.target.value)
+        $("#start").prop("disabled",false);
+      else
+        $("#start").prop("disabled",true);
+    });
+
+    //Sets the value of the hidden input = the chosen id and then sends the form
+    function search_workout(id){
+      see.value = id;
+      see.click();
+    }
+
+    function popUp(){
+      let popup = document.getElementsByClassName("popup");
+      popup[0].classList.add("show");
+    }
+
+    function start(){
+      //Getting all input fields of type submit
+      inputs = $('input[type = "submit"]');
+
+      //Setting the value of the one from the form as the workout name
+      inputs[inputs.length - 1].value = $('#workout_name').val();
+
+      //Sending the form
+      inputs[inputs.length - 1].click();
+    }
+</script>
+{% endblock %}

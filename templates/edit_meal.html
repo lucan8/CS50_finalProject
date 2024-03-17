@@ -1,0 +1,94 @@
+
+{% extends "layout.html" %}
+
+{% block title %}
+    Add food
+{% endblock %}
+
+{% block main %}
+<main class="container-fluid py-5 text-center">
+   <h3 class="goalInfo">Meal name: {{meal_name}}</h3>
+   <div class="mb-3">
+    <form action="/search_food" method="post">
+      <input autocomplete="off" autofocus class="form-control mx-auto w-auto" id="food_name" name="food_name" placeholder="food name" type="text">
+      <button disabled id="search_food" class="searchFood" disabled>Search food</button>
+    </form>
+  </div>
+  {% block add %}{% endblock %}
+</main>
+       <!--If the food was found-->
+       {% block search %}{% endblock %}
+       <!--If the food was not found-->
+{% if foods != [] %}
+<h5 id="meal_prez">Foods in this meal:</h5>
+<ul id="meal_list">
+    {% for food in foods %}
+      <li id="{{food}}"><a class="nav-link goalInfo" style="width:50px;height:35px" onclick="macroInfo('{{food | safe}}')">{{food}} </a><button class="removeFood" type="submit" onclick="removeFood('{{food | safe}}')">Remove food</button></li>
+    {% endfor %}
+</ul>
+{% endif %}
+
+<form action="/food_info" method="post" hidden>
+  <input type="submit" name="food_name" id="food_inf">
+</form>
+
+    <script>
+        const currentUrl = window.location.href;
+        if (currentUrl == "https://lucan8-upgraded-invention-rj9g6vvg74x25rq7-5000.app.github.dev/add_meal")
+           window.location.replace("https://lucan8-upgraded-invention-rj9g6vvg74x25rq7-5000.app.github.dev/add_food");
+
+        let foods = {{foods | safe}};
+        let meal_name = "{{meal_name | safe}}";
+
+        function macroInfo(food_name){
+            $("#food_inf").attr("value", food_name);
+            $("#food_inf").click();
+          }
+
+        function removeFood(food_name){
+          //Sending data necessary for removal to the python code
+             $.ajax({
+                    url: '/remove_meal_food',
+                    type: 'PUT',
+                    contentType: 'application/json',
+                    data: JSON.stringify( {"food_name": food_name,"meal_name": meal_name})
+                });
+
+              //Removing the food link and button
+              document.getElementById(food_name).remove();
+
+              //Removing the food name from the list
+              for (let i = 0, l = foods.length; i < l; i++)
+                  if (foods[i] == food_name){
+                    foods.splice(i, 1);
+                    break;
+                  }
+
+               //In case there is no more food the h5 and the ul also get removed
+               if (foods.length == 0){
+                document.getElementById("meal_prez").remove();
+                document.getElementById("meal_list").remove();
+               }
+
+            }
+      $("#food_name").on("input",(event) =>{
+        if (event.target.value)
+           document.getElementById("search_food").disabled = false;
+        else
+           document.getElementById("search_food").disabled = true;
+      });
+
+      document.getElementById("food_name").addEventListener("beforeinput",(event) =>{
+        if (event.data && !isAlpha(event.data))
+            event.preventDefault();
+      });
+
+      function isAlpha(str){
+          let regex = new RegExp("[a-zA-Z0-9 &()\-\/]");
+          if (str.match(regex))
+             return true;
+          return false;
+        }
+
+    </script>
+{% endblock %}

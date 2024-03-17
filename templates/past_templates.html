@@ -1,0 +1,69 @@
+{% extends "layout.html" %}
+
+{% block title %}
+
+Past templates
+
+{% endblock %}
+
+{% block main %}
+<div class="titleContainer">
+  <h1>{{template_name}}</h1>
+</div>
+<main class="container-fluid py-5 text-center">
+    {% if active_workout != 0 %}
+    <div><button class="addWorkout" onclick="popUp()">Start as workout<img src="static/pictures/startW.png" style="height:32.2px;" class="centerImg"></button></div>
+    {% else %}
+    <div><button class="addWorkout" onclick="createWorkout()">Start as workout<img src="static/pictures/startW.png" style="height:32.2px;" class="centerImg"></button></div>
+    {% endif %}
+</main>
+{% for exercise in ex_templates %}
+<table class="table table-success table-striped" id="{{exercise}}">
+    <thead>
+      <tr class="table-info">
+        <th scope="col" class="table-info">{{exercise}}</th>
+        <th scope="col" class="table-info">Weight</th>
+        <th scope="col" class="table-info">Reps</th>
+      </tr>
+    </thead>
+    <tbody><!-- to be added-->
+      {% for i in length_sets[exercise] %}
+      <tr class="table-info">
+        <td class="table-info">set {{i + 1}}</td>
+        <td class="table-info"><input type="number" disabled></td>
+        <td class="table-info"><input type="number" disabled></td>
+      </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+{% endfor %}
+
+<div id="myPopup" class="popup">
+<div class="popup-content">
+  <h3 style="text-align:center;">You have an active workout going on:</h3>
+  <p></p>
+  <button id="closePopup" class="removeMeal" style="display:inline;" onclick="createWorkout()">Start new workout</button>
+  <a style="color:gray; display:inline; text-align: right; float: right;" href="/new_workout">Continue active workout</a>
+</div>
+</div>
+
+<script>
+  active = '{{active_workout|safe}}';
+    //Sending the template info to workouts
+    workout_name = "{{template_name | safe}}";
+    workout_exercises = {{ex_templates | safe}};
+    nr_sets = {{nr_sets | safe}};
+
+    function popUp(){
+      document.getElementById("myPopup").classList.add("show");
+    }
+    function createWorkout(){
+    $.ajax({
+        url: "/workouts",
+        type: "PUT",
+        contentType: "application/json",
+        data: JSON.stringify({"workout_name":workout_name, "workout_exercises":workout_exercises, "nr_sets":nr_sets})
+    }).then(()=>{window.location.href = "https://lucan8-upgraded-invention-rj9g6vvg74x25rq7-5000.app.github.dev/new_workout";});
+  }
+</script>
+{% endblock %}

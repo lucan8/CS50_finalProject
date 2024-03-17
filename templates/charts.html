@@ -1,0 +1,148 @@
+{% extends "layout.html" %}
+
+{% block title %}
+Charts
+{% endblock %}
+
+{% block main %}
+<meta charset = "UTF8">
+<meta name= "viewport" content = "width=device-width, initial-scale=1.0">
+<script src = "https://cdn.jsdelivr.net/npm/chart.js@2.9.4/dist/Chart.min.js"></script>
+
+<div class="titleContainer">
+    <h1>Charts</h1>
+</div>
+<main class="container-fluid py-5 text-center">
+    <h3>This where you can see your progress using charts</h3>
+    <h4>Type the name of the exercise you want to see</h4>
+    <h5>The chart uses your 1 RM as data</h5>
+    <form action="/charts" method="post">
+        <button class="btn btn-primary" style="background-color:blue;border-color:black;color:white" type="submit" id="see_graph" disabled>See graph</button>
+        <input type="text" name="exercise_name" id="exercise_name" autofocus placeholder="Exercise name" list="suggestions_list" autocomplete = 'off'>
+    </form>
+</main>
+
+<h4 id="notFound_div" class="notFoundEx">
+
+</h4>
+<datalist id="suggestions_list">
+</datalist>
+
+<h3 id="show_chart">{{ex_name}}</h3>
+<h5 id="show_1RM">1RM of all time: {{true_rm}} kg</h5>
+<p id="demo"></p>
+<canvas id ="ex_chart" width = "900" height = "400"></canvas>
+<div>
+   <h5 style="text-align:center">Weight progress:</h5><!--Calculate the increase(or decrease) in percentage using the first and last weight inserted-->
+   <canvas id ="weight_chart" width = "900" height = "400"></canvas>
+</div>
+    <script>
+       let suggestions = document.getElementById("suggestions_list")
+
+        $("#exercise_name").on("input", function(event){
+          //Getting the name of the input field and the value in the input field
+          let ex_name = ((event.target.value).toLowerCase()).trim();
+          let input = event.target;
+
+          //If the input field is empty we disable the 'search' button
+          if (ex_name == ""){
+              $("#see_graph").prop("disabled", true);
+              document.getElementById("notFound_div").innerHTML = "";
+              return;
+          }
+          $.ajax({
+              type:'PUT',
+              url:'/charts',
+              contentType:'application/json',
+              data:JSON.stringify({'ex_name':ex_name})
+
+            }).done(function(data) {
+            showResults(JSON.parse(data), ex_name, input);
+        });
+    });
+
+          function showResults(ex_list, ex_name, input){
+             //Emptying previous suggestions and setting found to false
+             let found = false;
+             $(suggestions).empty();
+
+          //If the exercise list is empty that means no exercise was performed so there is no graph to see
+          if (!ex_list.length){
+            document.getElementById("notFound_div").innerHTML = "Not Found";
+            return;
+          }
+          document.getElementById("notFound_div").innerHTML = "";
+
+            for (let i = 0, l = ex_list.length; i < l; i++){
+                if (ex_list[i].toLowerCase() == ex_name){
+                    found = true;
+
+                    $("#see_graph").prop("disabled", false);
+
+                    input.value = ex_list[i];
+                }
+
+                let ex = document.createElement("option");
+
+                ex.value = ex_list[i];
+
+                ex.classList.add("autoComplete");
+
+                suggestions.appendChild(ex);
+            }
+
+            if (found == false){
+                $("#see_graph").prop("disabled", true);
+            }
+        }
+
+        let exercise_name = "{{ex_name|safe}}";
+        if (!exercise_name)
+           document.getElementById("show_1RM").style.display = "none";
+        var ctx_ex = document.getElementById("ex_chart").getContext("2d");
+        var exChart = new Chart(ctx_ex,{
+            type: "line",
+            data:{
+                labels:{{workout_startDates | safe}},
+                datasets: [
+                    {
+                        label: "Data points",
+                        data: {{PR_list | safe}},
+                        fill: false,
+                        borderColor:"rgb(75,192,192)",
+                        lineTension:0.1
+                    }
+                ]
+            },
+            options: {
+                responsive: false
+            }
+        });
+
+        var ctx_weight = document.getElementById("weight_chart").getContext("2d");//Try without getContext
+        var chartData = {
+            "dates":{{dates | safe}},
+            "weight":{{weight | safe}}
+        };
+
+        var config = {
+            type:"line",
+            data:{
+                labels:chartData["dates"],
+                datasets:[
+                    {
+                        label:"Data points",
+                        data:chartData["weight"],
+                        fill:false,
+                        borderColor:"rgb(75,192,192)",
+                        lineTension:0.1
+                    }
+                ]
+            },
+            options: {
+                responsive: false
+            }
+        };
+        var weightChart = new Chart(ctx_weight, config);
+    </script>
+{% endblock %}

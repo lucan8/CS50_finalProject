@@ -1,0 +1,58 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    Exercise info
+{% endblock %}
+
+{% block main %}
+<div class="titleContainer">
+<h1 class="goalInfo">Exercise info!</h1>
+</div>
+<div class="ex_infoCont">
+    <main class="container-fluid py-5 text-center">
+        <h3 class="goalInfo" style="display:inline;">Selected exercise: <h3 style="color:green;display:inline;">{{data["name"]}}</h3></h3>
+        <h3 class="goalInfo">Dominant muscle group:<div style="color:purple;display:inline;">{{data["muscle"]}}</div></h3>
+        {% if status == 'nW' %}
+        <button class="addWorkout" onclick="addExercise()" id="add">Add to workout|+</button>
+        {% elif status == 'nT' %}
+            <button class="addWorkout" onclick="addExercise()" id="add">Add to template|+</button>
+        {% else %}
+            <button class="addWorkout" onclick="addExercise()" id="add">Add to template/workout|+</button>
+        {% endif %}
+    </main>
+    <h4>Exercise instructions:</h4>
+    <div style="border: 2px solid green;" id="instr_cont">
+        <h5 class="instructions" id="instructions">{{data["instructions"]}}</h5>
+    </div>
+</div>
+<script>
+    let instr = "{{data['instructions'] | safe}}";
+    if (!instr){
+        $('#instr_cont').prop('hidden', true);
+        $('h4').prop('hidden', true);
+    }
+    //We can get here either form new_workout or new_template
+    let status = '{{status | safe}}';
+
+    //If the exercise is already in the workout we disable the button to prevent the user from adding it again
+    if (status == 'y')
+        $("#add").prop("disabled", true);
+
+    //addExercise inserts into database the info about the exercise
+    function addExercise(){
+        let name = "{{data['name'] | safe}}";
+        //Sending the info to exercise_info in order to be stored into database and,when done,changing the url
+        $.ajax({
+                url: "/exercise_info",
+                type: "PUT",
+                contentType: "application/json",
+                data: JSON.stringify({"name": name, 'status':status}),
+                //success:function(response){ document.write(response);}(it rewrites the current html)
+        }).then(()=>{if (status == 'nW')
+                        window.location.href = "https://lucan8-upgraded-invention-rj9g6vvg74x25rq7-5000.app.github.dev/new_workout";
+                    else
+                        window.location.href = "https://lucan8-upgraded-invention-rj9g6vvg74x25rq7-5000.app.github.dev/new_template";
+                    });
+    }
+</script>
+{% endblock %}

@@ -1,0 +1,61 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    Journal
+{% endblock %}
+
+{% block main %}
+<!--Showing all user's diet days as a table.If the calorie goal was met the row is green,otherwise it's red-->
+<main class="container-fluid py-5 text-center">
+    <h5 class="caloriesInfo">This is your journal</h5>
+    <h5>Here you can see information about your diet days</h5>
+    <table class="table table-striped">
+        <thead>
+            <tr class="table-info">
+                <th scope="col" class="table-info">Date</th>
+                <th scope="col" class="table-info">Goal info</th>
+                <th scope="col" class="table-info">See diet day</th>
+           </tr>
+        </thead>
+
+        <tbody>
+            {% for i in index_list %}
+                  {% if goals_met[i] %}
+                    <tr class="succesMe">
+                        <!--The diet_days long lines bassicaly eliminate the time from the date_time string(everything afer " ")-->
+                        <td class="succesMe">{{diet_days[i]["date"].replace(diet_days[i]["date"][diet_days[i]["date"].rfind(" "):], "")}}</td>
+                        <td class="succesMe">YES</td>
+                        <td class="succesMe"><button class="btn btn-primary" onclick="see_dietDay('{{diet_days[i]['date'] | safe}}')" id="{{i}}">See diet day</button></td>
+                    </tr>
+                   {% else %}
+                   <tr class="table-danger">
+                        <td class="table-danger">{{diet_days[i]["date"].replace(diet_days[i]["date"][diet_days[i]["date"].rfind(" "):], "")}}</td>
+                        <td class="table-danger">NO</td>
+                        <td class="table-danger">
+                            <button class="btn btn-primary" onclick="see_dietDay('{{diet_days[i]['date'] | safe}}')" id="{{i}}">See diet day</button>
+                        </td>
+                   </tr>
+                   {% endif %}
+            {% endfor %}
+        </tbody>
+    </table>
+</main>
+<form action="/see_diet" method="post">
+    <input type="submit" hidden name="diet_date" id="diet_date">
+</form>
+
+<script>
+    //Tets to see if it actually gets disabled
+    index_list = {{index_list | safe}};
+    last = index_list.length - 1;
+
+    //Disabling the button that gives info about active diet day
+    document.getElementById(last).disabled = true;
+
+    //Giving user ability to see more detail about selected diet day
+    function see_dietDay(date){
+        $("#diet_date").attr("value", date);
+        $("#diet_date").click();
+    }
+</script>
+{% endblock %}
